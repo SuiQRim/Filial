@@ -49,11 +49,10 @@ namespace PrinterFil.Api.Controllers
 		public async Task<ActionResult<IEnumerable<InstallationResponceDTO>>> Get([FromQuery] int id)
 		{
 			Installation? installation = await _context.Installations.Include(i => i.Filials).SingleOrDefaultAsync(x => x.Id == id);
-
 			if(installation is null)  
 				return NotFound($"Installation with id [{id}] is not found");
 
-			Installation? i = installation;
+			Installation i = installation;
 			return Ok(new InstallationResponceDTO(
 				i.Id, i.Name, i.FillialId, i.DeviceId,
 				i.Fillial.DefaultInstallationId == i.Id,
@@ -80,7 +79,6 @@ namespace PrinterFil.Api.Controllers
 			if (order == null)
 				return BadRequest($"Order is busy");
 
-
 			Installation newInstallation = new()
 			{
 				Name = installation.Name,
@@ -104,6 +102,44 @@ namespace PrinterFil.Api.Controllers
 			return CreatedAtAction(nameof(Add), newInstallation.Id);
 		}
 
+		/// <summary>
+		/// Удаляет инсталляцию
+		/// </summary>
+		/// <param name="id">Идентификатор</param>
+		/// <returns></returns>
+		[HttpDelete]
+		public async Task<IActionResult> Delete(int id)
+		{
+			Installation? installation = await _context.Installations.Include(i => i.Filials).SingleOrDefaultAsync(i => i.Id == id);
+			if (installation == null)
+				return NotFound($"Installation with id [{id}] is not found");
+
+			Filial? filial = await _context.Filials.FindAsync(installation.FillialId);
+			if (filial == null)
+				return NotFound($"Filial with id [{installation.FillialId}] is not found");
+
+			if (filial.DefaultInstallationId == installation.Id)
+			{
+				Installation? newDefaultInstallation =
+					await _context.Installations
+						.Where(i => i.FillialId == installation.FillialId)
+						.Include(i => i.Filials)
+						.Where(i => i.Fillial.DefaultInstallationId != i.Id)
+						.OrderBy(i => i.Order).FirstOrDefaultAsync();
+
+				if (newDefaultInstallation == null)
+					return BadRequest("Сannot delete the latest installation in the filial");
+
+				filial.DefaultInstallation = newDefaultInstallation;
+			}
+
+			_context.Installations.Remove(installation);
+			await _context.SaveChangesAsync();
+
+			return Ok();
+		}
+
+
 		private async Task<int?> GetOrder(InstallationDTO installation)
 		{
 			if (installation.Order == null || installation.Order == 0)
@@ -111,7 +147,8 @@ namespace PrinterFil.Api.Controllers
 				return _context.Installations.Max(x => x.Order + 1);
 			}
 
-			Installation? instalationFromDB = await _context.Installations.SingleOrDefaultAsync(x => x.FillialId == installation.FilialId && x.Order == installation.Order);
+			Installation? instalationFromDB = await _context.Installations
+					.SingleOrDefaultAsync(x => x.FillialId == installation.FilialId && x.Order == installation.Order);
 
 			return instalationFromDB == null ? installation.Order : null;
 		}
