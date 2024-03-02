@@ -9,9 +9,9 @@ namespace PrinterFil.Api.Controllers
     [ApiController]
     public class PrintingDevicesController : ControllerBase
     {
-        private readonly FiilalServerContext _context;
+        private readonly FilialServerContext _context;
 
-        public PrintingDevicesController(FiilalServerContext context)
+        public PrintingDevicesController(FilialServerContext context)
         {
             _context = context;
         }

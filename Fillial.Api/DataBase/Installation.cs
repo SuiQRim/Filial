@@ -1,4 +1,7 @@
-﻿namespace PrinterFil.Api.DataBase;
+﻿using System;
+using System.Collections.Generic;
+
+namespace PrinterFil.Api.DataBase;
 
 public partial class Installation
 {
@@ -12,9 +15,9 @@ public partial class Installation
 
     public int Order { get; set; }
 
-    public bool IsDefault { get; set; }
-
     public virtual PrintingDevice Device { get; set; } = null!;
+
+    public virtual ICollection<Filial> Filials { get; set; } = new List<Filial>();
 
     public virtual Filial Fillial { get; set; } = null!;
 }

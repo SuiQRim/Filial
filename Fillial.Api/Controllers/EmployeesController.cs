@@ -9,9 +9,9 @@ namespace PrinterFil.Api.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        private readonly FiilalServerContext _context;
+        private readonly FilialServerContext _context;
 
-        public EmployeesController(FiilalServerContext context)
+        public EmployeesController(FilialServerContext context)
         {
             _context = context;
         }

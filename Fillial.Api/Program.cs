@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-builder.Services.AddDbContext<FiilalServerContext>(options =>
+builder.Services.AddDbContext<FilialServerContext>(options =>
 	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

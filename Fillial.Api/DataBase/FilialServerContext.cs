@@ -1,14 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace PrinterFil.Api.DataBase;
 
-public partial class FiilalServerContext : DbContext
+public partial class FilialServerContext : DbContext
 {
-    public FiilalServerContext()
+    public FilialServerContext()
     {
     }
 
-    public FiilalServerContext(DbContextOptions<FiilalServerContext> options)
+    public FilialServerContext(DbContextOptions<FilialServerContext> options)
         : base(options)
     {
     }
@@ -24,6 +26,10 @@ public partial class FiilalServerContext : DbContext
     public virtual DbSet<PrintJob> PrintJobs { get; set; }
 
     public virtual DbSet<PrintingDevice> PrintingDevices { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FilialServer;Integrated Security=True;Encrypt=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,18 +56,19 @@ public partial class FiilalServerContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK_Fillials");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Location).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(50);
+
+            entity.HasOne(d => d.DefaultInstallation).WithMany(p => p.Filials)
+                .HasForeignKey(d => d.DefaultInstallationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Filials_Installations");
         });
 
         modelBuilder.Entity<Installation>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_Installation");
 
-            entity.HasIndex(e => e.Order, "IX_Installations");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
 
             entity.HasOne(d => d.Device).WithMany(p => p.Installations)
