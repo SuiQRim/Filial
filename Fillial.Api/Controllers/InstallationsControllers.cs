@@ -15,7 +15,51 @@ namespace PrinterFil.Api.Controllers
 		{
 			_context = context;
 		}
-		
+
+		/// <summary>
+		/// Возвращает коллекцию инсталляций
+		/// </summary>
+		/// <param name="filialId">Фильтр по идентификатору филиала</param>
+		/// <returns></returns>
+		[HttpGet("collection")]
+		public async Task<ActionResult<IEnumerable<InstallationResponceDTO>>> Get([FromQuery] int? filialId)
+		{
+			if (filialId != null && await _context.Filials.FindAsync(filialId) == null)
+			{
+				return NotFound($"Filial with id [{filialId}] is not found");
+			}
+
+			return Ok(
+				await _context.Installations
+					.Where(i => filialId == null || i.FillialId == filialId)
+					.Include(i => i.Filials)
+					.Select(i => new InstallationResponceDTO(
+						i.Id, i.Name, i.FillialId, i.DeviceId,
+						i.Filials.Single(f => f.Id == i.FillialId).DefaultInstallationId == i.Id,
+						i.Order))
+					.ToArrayAsync());
+		}
+
+		/// <summary>
+		/// Возвращает инсталляцию по идентификатору
+		/// </summary>
+		/// <param name="id">Идентификатор</param>
+		/// <returns></returns>
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<InstallationResponceDTO>>> Get([FromQuery] int id)
+		{
+			Installation? installation = await _context.Installations.Include(i => i.Filials).SingleOrDefaultAsync(x => x.Id == id);
+
+			if(installation is null)  
+				return NotFound($"Installation with id [{id}] is not found");
+
+			Installation? i = installation;
+			return Ok(new InstallationResponceDTO(
+				i.Id, i.Name, i.FillialId, i.DeviceId,
+				i.Fillial.DefaultInstallationId == i.Id,
+				i.Order));
+		}
+
 		/// <summary>
 		/// Добавляет новую инсталляцию
 		/// </summary>
@@ -31,7 +75,6 @@ namespace PrinterFil.Api.Controllers
 			PrintingDevice? printer = await _context.PrintingDevices.FindAsync(installation.PrintingDeviceId);
 			if (printer == null)
 				return NotFound($"Printing device with id [{installation.PrintingDeviceId}] is not found");
-
 
 			int? order = await GetOrder(installation);
 			if (order == null)
