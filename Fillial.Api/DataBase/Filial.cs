@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace PrinterFil.Api.DataBase.Entities;
+﻿namespace PrinterFil.Api.DataBase;
 
 public partial class Filial
 {

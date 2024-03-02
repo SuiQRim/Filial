@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using PrinterFil.Api.DataBase.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace PrinterFil.Api.DataBase;
 
