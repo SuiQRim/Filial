@@ -75,7 +75,7 @@ namespace PrinterFil.Api.Controllers
 			if (printer == null)
 				return NotFound($"Printing device with id [{installation.PrintingDeviceId}] is not found");
 
-			int? order = await GetOrder(installation);
+			byte? order = await GetOrder(installation);
 			if (order == null)
 				return BadRequest($"Order is busy");
 
@@ -84,7 +84,7 @@ namespace PrinterFil.Api.Controllers
 				Name = installation.Name,
 				DeviceId = installation.PrintingDeviceId,
 				FillialId = installation.PrintingDeviceId,
-				Order = (int)order
+				Order = (byte)order
 			};
 
 			//Если нужно выставить инсталляцию по умолчанию, то проще добавить через филиал
@@ -140,11 +140,11 @@ namespace PrinterFil.Api.Controllers
 		}
 
 
-		private async Task<int?> GetOrder(InstallationDTO installation)
+		private async Task<byte?> GetOrder(InstallationDTO installation)
 		{
 			if (installation.Order == null || installation.Order == 0)
 			{
-				return _context.Installations.Max(x => x.Order + 1);
+				return (byte)await _context.Installations.MaxAsync(x => x.Order + 1);
 			}
 
 			Installation? instalationFromDB = await _context.Installations
@@ -152,5 +152,6 @@ namespace PrinterFil.Api.Controllers
 
 			return instalationFromDB == null ? installation.Order : null;
 		}
+
 	}
 }

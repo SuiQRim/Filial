@@ -25,11 +25,9 @@ public partial class FilialServerContext : DbContext
 
     public virtual DbSet<PrintJob> PrintJobs { get; set; }
 
-    public virtual DbSet<PrintingDevice> PrintingDevices { get; set; }
+    public virtual DbSet<PrintStatus> PrintStatuses { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FilialServer;Integrated Security=True;Encrypt=True");
+    public virtual DbSet<PrintingDevice> PrintingDevices { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,13 +35,11 @@ public partial class FilialServerContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK_ConnectionType");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
 
             entity.HasOne(d => d.Fillial).WithMany(p => p.Employees)
@@ -84,17 +80,30 @@ public partial class FilialServerContext : DbContext
 
         modelBuilder.Entity<PrintJob>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Task).HasMaxLength(2000);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.PrintJobs)
                 .HasForeignKey(d => d.EmployeeId)
                 .HasConstraintName("FK_PrintJobs_Employees");
+
+            entity.HasOne(d => d.Installation).WithMany(p => p.PrintJobs)
+                .HasForeignKey(d => d.InstallationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PrintJobs_Installations");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.PrintJobs)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PrintJobs_PrintStatuses");
+        });
+
+        modelBuilder.Entity<PrintStatus>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(20);
         });
 
         modelBuilder.Entity<PrintingDevice>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.MacAddress)
                 .HasMaxLength(12)
                 .HasDefaultValue("00000000000");

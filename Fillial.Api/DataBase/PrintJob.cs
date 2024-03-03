@@ -11,9 +11,15 @@ public partial class PrintJob
 
     public int EmployeeId { get; set; }
 
-    public int InstallationOrder { get; set; }
+    public int InstallationId { get; set; }
 
     public int LayerCount { get; set; }
 
+    public int StatusId { get; set; }
+
     public virtual Employee Employee { get; set; } = null!;
+
+    public virtual Installation Installation { get; set; } = null!;
+
+    public virtual PrintStatus Status { get; set; } = null!;
 }
