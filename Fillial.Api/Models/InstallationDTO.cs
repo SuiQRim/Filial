@@ -15,5 +15,5 @@ namespace PrinterFil.Api.Models
 		int FilialId, 
 		int PrintingDeviceId,
 		bool IsDefault,
-		[Range(1, byte.MaxValue, ErrorMessage = "Enter a value bigger than {0}")] byte? Order);
+		byte? Order);
 }

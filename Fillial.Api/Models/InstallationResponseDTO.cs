@@ -9,5 +9,5 @@
 	/// <param name="PrintingDeviceId">Идентификатор устройства печати</param>
 	/// <param name="IsDefault">Признак "по умолчанию" для своего филиала</param>
 	/// <param name="Order">Порядковый номер</param>
-	public record InstallationResponceDTO(int Id, string Name, int FilialId, int PrintingDeviceId, bool IsDefault, int Order);
+	public record InstallationResponseDTO(int Id, string Name, int FilialId, int PrintingDeviceId, bool IsDefault, int Order);
 }

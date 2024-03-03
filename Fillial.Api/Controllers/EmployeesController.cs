@@ -24,8 +24,10 @@ namespace PrinterFil.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EmployeeDTO>>> GetEmployees()
         {
-
-			return await _context.Employees.Select(x => new EmployeeDTO(x.Id, x.Name)).ToListAsync();
+			return Ok(await _context
+                .Employees
+                .Select(x => new EmployeeDTO(x.Id, x.Name, x.FillialId))
+                .ToListAsync());
 		}
 
     }

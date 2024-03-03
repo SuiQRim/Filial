@@ -23,7 +23,10 @@ namespace PrinterFil.Api.Controllers
 		[HttpGet]
         public async Task<ActionResult<IEnumerable<FilialDTO>>> GetFilials()
         {
-			return await _context.Filials.Select(x => new FilialDTO(x.Id, x.Location, x.Name)).ToListAsync();
+            return Ok(await _context
+                .Filials
+                .Select(x => new FilialDTO(x.Id, x.Location, x.Name))
+                .ToListAsync());
 		}
 
     }

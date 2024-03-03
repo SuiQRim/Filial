@@ -22,22 +22,22 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="filialId">Фильтр по идентификатору филиала</param>
 		/// <returns></returns>
 		[HttpGet("collection")]
-		public async Task<ActionResult<IEnumerable<InstallationResponceDTO>>> Get([FromQuery] int? filialId)
+		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int? filialId)
 		{
 			if (filialId != null && await _context.Filials.FindAsync(filialId) == null)
 			{
 				return NotFound($"Filial with id [{filialId}] is not found");
 			}
 
-			return Ok(
-				await _context.Installations
-					.Where(i => filialId == null || i.FillialId == filialId)
-					.Include(i => i.Filials)
-					.Select(i => new InstallationResponceDTO(
-						i.Id, i.Name, i.FillialId, i.DeviceId,
-						i.Filials.Single(f => f.Id == i.FillialId).DefaultInstallationId == i.Id,
-						i.Order))
-					.ToArrayAsync());
+			return Ok(await _context
+				.Installations
+				.Where(i => filialId == null || i.FillialId == filialId)
+				.Include(i => i.Filials)
+				.Select(i => new InstallationResponseDTO(
+					i.Id, i.Name, i.FillialId, i.DeviceId,
+					i.Filials.Single(f => f.Id == i.FillialId).DefaultInstallationId == i.Id,
+					i.Order))
+				.ToArrayAsync());
 		}
 
 		/// <summary>
@@ -46,14 +46,14 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="id">Идентификатор</param>
 		/// <returns></returns>
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<InstallationResponceDTO>>> Get([FromQuery] int id)
+		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int id)
 		{
-			Installation? installation = await _context.Installations.Include(i => i.Filials).SingleOrDefaultAsync(x => x.Id == id);
+			Installation? installation = await _context.Installations.Include(i => i.Fillial).SingleOrDefaultAsync(x => x.Id == id);
 			if(installation is null)  
 				return NotFound($"Installation with id [{id}] is not found");
 
 			Installation i = installation;
-			return Ok(new InstallationResponceDTO(
+			return Ok(new InstallationResponseDTO(
 				i.Id, i.Name, i.FillialId, i.DeviceId,
 				i.Fillial.DefaultInstallationId == i.Id,
 				i.Order));
@@ -87,14 +87,13 @@ namespace PrinterFil.Api.Controllers
 				Order = (byte)order
 			};
 
-			//Если нужно выставить инсталляцию по умолчанию, то проще добавить через филиал
 			if (installation.IsDefault)
 			{
 				filial.DefaultInstallation = newInstallation;
 			}
 			else
 			{
-				await _context.Installations.AddAsync(newInstallation);
+				filial.Installations.Add(newInstallation);
 			}
 
 			await _context.SaveChangesAsync();
@@ -139,7 +138,6 @@ namespace PrinterFil.Api.Controllers
 			return Ok();
 		}
 
-
 		private async Task<byte?> GetOrder(InstallationDTO installation)
 		{
 			if (installation.Order == null || installation.Order == 0)
@@ -152,6 +150,5 @@ namespace PrinterFil.Api.Controllers
 
 			return instalationFromDB == null ? installation.Order : null;
 		}
-
 	}
 }
