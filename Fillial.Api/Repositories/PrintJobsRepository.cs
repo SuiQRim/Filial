@@ -40,9 +40,9 @@ public class PrintJobsRepository : IPrintJobsRepository
 		foreach (PrintJobDTO printJob in records)
 		{
 			PrintJobs[count] = await CreatePrintJob(printJob);
+			count++;
 			if (count == maxJobs)
 				break;
-			count++;
 		}
 
 		await _context.PrintJobs.AddRangeAsync(PrintJobs);
@@ -101,7 +101,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 
 	}
 
-	private PrintStatus ImitateOfPrint(bool withTime = false)
+	private PrintStatus ImitateOfPrint(bool withTime = true)
 	{
 		Random rnd = new();
 		if (withTime)
