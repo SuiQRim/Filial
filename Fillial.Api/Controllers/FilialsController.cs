@@ -16,9 +16,11 @@ public class FilialsController : ControllerBase
 	}
 
 	/// <summary>
-	/// Возвращает список всех филиалов
+	/// Предоставляет список филиалов
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Список филиалов</returns>
+	/// <response code="200">Успешное предоставление</response>
+	[ProducesResponseType(typeof(IEnumerable<FilialDTO>), 200)]
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<FilialDTO>>> GetFilials() => 
 		Ok(await _repository.ReadAsync());

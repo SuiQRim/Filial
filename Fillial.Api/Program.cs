@@ -17,10 +17,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 builder.Services.AddSwaggerGen(options =>
 {
-	string xmlFilename =
-	$"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-	options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
-	xmlFilename));
+	string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+	options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 	options.SwaggerDoc("v1", new OpenApiInfo
 	{
 		Version = "v1",

@@ -16,12 +16,16 @@ public class PrintingDevicesController : ControllerBase
         _repository = repository;
     }
 
-    /// <summary>
-    /// Возвращает список печатных устройств
-    /// </summary>
-    /// <param name="connectionType">Тип подключения</param>
-    /// <returns></returns>
-    [HttpGet]
+	/// <summary>
+	/// Предоставляет список печатных устройств
+	/// </summary>
+	/// <param name="connectionType">Тип подключения</param>
+	/// <returns>Список печатных устройств</returns>
+	/// <response code="200">Успешное предоставление</response>
+	/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
+	[ProducesResponseType(typeof(IEnumerable<PrintingDeviceDTO>), 200)]
+	[ProducesResponseType(404)]
+	[HttpGet]
     public async Task<ActionResult<IEnumerable<PrintingDeviceDTO>>> GetPrintingDevices([FromQuery] int? connectionType) =>
         Ok(await _repository.ReadAsync(connectionType));
         

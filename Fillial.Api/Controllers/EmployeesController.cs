@@ -16,9 +16,11 @@ public class EmployeesController : ControllerBase
 	}
 
 	/// <summary>
-	/// Возвращает список всех сотрудников компании
+	/// Предоставляет список всех сотрудников компании
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Список сотрудников компании</returns>
+	/// <response code="200">Успешное предоставление</response>
+	[ProducesResponseType(typeof(IEnumerable<EmployeeDTO>), 200)]
 	[HttpGet]
     public async Task<ActionResult<IEnumerable<EmployeeDTO>>> GetEmployees() =>
 		Ok(await _repository.ReadAsync());
