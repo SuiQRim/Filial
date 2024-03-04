@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CsvHelper.Configuration.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.Models
 {
@@ -10,10 +11,10 @@ namespace PrinterFil.Api.Models
 	/// <param name="InstallationOrder">Порядковый номер инсталляции</param>
 	/// <param name="LayerCount">Количество страниц</param>
 	public record PrintJobDTO (
-		string Name,
-		int EmployeeId,
-		int? InstallationOrder,
-		[Range(1, int.MaxValue, ErrorMessage = "Enter a value bigger than {0}")] int LayerCount
+		[Index(0)] string Name,
+		[Index(1)] int EmployeeId,
+		[Index(2)] int? InstallationOrder,
+		[Index(3)] [Range(1, int.MaxValue, ErrorMessage = "Enter a value bigger than {0}")] int LayerCount
 	);
 
 }

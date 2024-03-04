@@ -38,7 +38,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 
 		int count = 0;
 		foreach (PrintJobDTO printJob in records)
-		{
+		{	
 			PrintJobs[count] = await CreatePrintJob(printJob);
 			count++;
 			if (count == maxJobs)
@@ -70,7 +70,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 			Task = printJobDTO.Name,
 			EmployeeId = printJobDTO.EmployeeId,
 			Installation = installation,
-			LayerCount = printJobDTO.LayerCount,
+			LayerCount = printJobDTO.LayerCount, 
 			Status = ImitateOfPrint()
 		};
 		return job;
@@ -86,7 +86,9 @@ public class PrintJobsRepository : IPrintJobsRepository
 			CsvConfiguration csvConfig = new(CultureInfo.InvariantCulture)
 			{
 				Delimiter = ";",
-				Encoding = Encoding.UTF8
+				Encoding = Encoding.UTF8,
+				HasHeaderRecord = false,
+				ShouldSkipRecord = x => x.Row.Parser.Record?.Any(field => string.IsNullOrWhiteSpace(field)) ?? false
 			};
 
 			using CsvReader csvReader = new(streamReader, csvConfig);
