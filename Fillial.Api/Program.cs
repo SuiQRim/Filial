@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PrinterFil.Api.DataBase;
+using PrinterFil.Api.Middlewares;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -25,6 +26,8 @@ builder.Services.AddSwaggerGen(options =>
 	});
 });
 
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
+
 builder.Services.AddDbContext<FilialServerContext>(options =>
 	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
 builder.Services.AddEndpointsApiExplorer();
@@ -39,6 +42,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
