@@ -32,6 +32,7 @@ builder.Services.AddDbContext<FilialServerContext>(options =>
 	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
 
 builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>();
+builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
 builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
 builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();

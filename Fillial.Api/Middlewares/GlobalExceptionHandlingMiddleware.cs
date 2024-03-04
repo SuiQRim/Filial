@@ -26,14 +26,28 @@ namespace PrinterFil.Api.Middlewares
 				ProblemDetails problem = new()
 				{
 					Status = (int)HttpStatusCode.NotFound,
-					Type = "Not Found",
-					Title = "Not Found",
+					Type = HttpStatusCode.NotFound.ToString(),
+					Title = "Entity Not Found",
 					Detail = e.Message
 				};
 				var json = JsonSerializer.Serialize(problem);
 				context.Response.ContentType = "application/json";
 				await context.Response.WriteAsJsonAsync(json);
 			
+			}
+			catch (BadHttpRequestException e)
+			{
+				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+				ProblemDetails problem = new()
+				{
+					Status = (int)HttpStatusCode.BadRequest,
+					Type = HttpStatusCode.BadRequest.ToString(),
+					Title = "Bad Request",
+					Detail = e.Message
+				};
+				var json = JsonSerializer.Serialize(problem);
+				context.Response.ContentType = "application/json";
+				await context.Response.WriteAsJsonAsync(json);
 			}
 			catch (Exception e)
 			{
