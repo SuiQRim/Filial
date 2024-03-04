@@ -35,7 +35,7 @@ builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>();
 builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
 builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
-builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
+builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

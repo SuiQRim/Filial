@@ -19,6 +19,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 		_context = context;
 	}
 
+	/// <inheritdoc/>
     public async Task<PrintJob> CreateAsync(PrintJobDTO printJobDTO)
 	{
 		PrintJob printJob = await CreatePrintJob(printJobDTO);
@@ -27,6 +28,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 		return printJob;
 	}
 
+	/// <inheritdoc/>
 	public async Task<int> ImportAsync(IFormFile uploadedFile)
 	{
 		const int maxJobs = 100;
@@ -49,6 +51,7 @@ public class PrintJobsRepository : IPrintJobsRepository
 		return count;
 	}
 
+	/// <inheritdoc/>
 	private async Task<PrintJob> CreatePrintJob(PrintJobDTO printJobDTO)
 	{
 		Filial? filial = await _context
@@ -75,19 +78,27 @@ public class PrintJobsRepository : IPrintJobsRepository
 
 	private static PrintJobDTO [] ParsePrintJobsFromCSV(IFormFile uploadedFile)
 	{
-		PrintJobDTO[] records;
-
-		using StreamReader streamReader = new(uploadedFile.OpenReadStream());
-		CsvConfiguration csvConfig = new(CultureInfo.InvariantCulture)
+		try
 		{
-			Delimiter = ";",
-			Encoding = Encoding.UTF8
-		};
+			PrintJobDTO[] records;
 
-		using CsvReader csvReader = new(streamReader, csvConfig);
-		records = csvReader.GetRecords<PrintJobDTO>().ToArray();
+			using StreamReader streamReader = new(uploadedFile.OpenReadStream());
+			CsvConfiguration csvConfig = new(CultureInfo.InvariantCulture)
+			{
+				Delimiter = ";",
+				Encoding = Encoding.UTF8
+			};
 
-		return records;
+			using CsvReader csvReader = new(streamReader, csvConfig);
+			records = csvReader.GetRecords<PrintJobDTO>().ToArray();
+
+			return records;
+		}
+		catch (HeaderValidationException)
+		{
+			throw new ParsingFileException("Print Jobs could not be parsed");
+		}
+
 	}
 
 	private PrintStatus ImitateOfPrint(bool withTime = false)

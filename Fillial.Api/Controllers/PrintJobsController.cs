@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PrinterFil.Api.Exceptions;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
@@ -31,8 +32,18 @@ public class PrintJobsController : ControllerBase
 	/// <param name="uploadedFile">CSV файл с записями</param>
 	/// <returns>Количество выполненных печатей</returns>
 	[HttpPost("import")]
-	public async Task<ActionResult<int>> ImportPrintJobCSV(IFormFile uploadedFile) =>
-		Ok(await _repository.ImportAsync(uploadedFile));
+	public async Task<ActionResult<int>> ImportPrintJobCSV(IFormFile uploadedFile)
+	{
+		try
+		{
+			return Ok(await _repository.ImportAsync(uploadedFile));
+		}
+		catch (ParsingFileException)
+		{
+			return UnprocessableEntity();
+		}
+	}
+		
 		
 }
 
