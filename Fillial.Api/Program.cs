@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Middlewares;
+using PrinterFil.Api.Repositories;
+using PrinterFil.Api.Repositories.IRepositories;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -25,11 +27,12 @@ builder.Services.AddSwaggerGen(options =>
 		Title = "Сервис"
 	});
 });
-
 builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
-
 builder.Services.AddDbContext<FilialServerContext>(options =>
 	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
+
+builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
