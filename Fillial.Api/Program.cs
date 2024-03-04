@@ -31,7 +31,10 @@ builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 builder.Services.AddDbContext<FilialServerContext>(options =>
 	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
 
-builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
+builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>();
+builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
+builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
+builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
