@@ -26,9 +26,14 @@ public class PrintingDevicesController : ControllerBase
 	[ProducesResponseType(typeof(IEnumerable<PrintingDeviceDTO>), 200)]
 	[ProducesResponseType(404)]
 	[HttpGet]
-    public async Task<ActionResult<IEnumerable<PrintingDeviceDTO>>> GetPrintingDevices([FromQuery] int? connectionType) =>
-        Ok(await _repository.ReadAsync(connectionType));
-        
+	public async Task<ActionResult<IEnumerable<PrintingDeviceDTO>>> GetPrintingDevices([FromQuery] int? connectionType)
+	{
+		IEnumerable<PrintingDevice> devices = await _repository.ReadAsync(connectionType);
 
+		IEnumerable<PrintingDeviceDTO> deviceDTOs =
+			devices.Select(x => new PrintingDeviceDTO(x.Id, x.Name, x.ConnectionTypeId, x.MacAddress));
+
+		return Ok(deviceDTOs);
+	}    
 }
 

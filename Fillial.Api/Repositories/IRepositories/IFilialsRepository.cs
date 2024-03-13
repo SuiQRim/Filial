@@ -1,4 +1,4 @@
-﻿using PrinterFil.Api.Models;
+﻿using PrinterFil.Api.DataBase;
 
 namespace PrinterFil.Api.Repositories.IRepositories;
 
@@ -8,5 +8,5 @@ public interface IFilialsRepository
 	/// Возвращает список филиалов
 	/// </summary>
 	/// <returns></returns>
-	Task<IEnumerable<FilialDTO>> ReadAsync();
+	Task<IEnumerable<Filial>> ReadAsync();
 }

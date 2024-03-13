@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
@@ -22,7 +23,15 @@ public class FilialsController : ControllerBase
 	/// <response code="200">Успешное предоставление</response>
 	[ProducesResponseType(typeof(IEnumerable<FilialDTO>), 200)]
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<FilialDTO>>> GetFilials() => 
-		Ok(await _repository.ReadAsync());
+	public async Task<ActionResult<IEnumerable<FilialDTO>>> GetFilials()
+	{
+		IEnumerable<Filial> filials = await _repository.ReadAsync();
+
+		IEnumerable<FilialDTO> FilialDTOs = filials
+			.Select(x => new FilialDTO(x.Id, x.Location, x.Name));
+
+		return Ok(FilialDTOs);
+	} 
+
 	
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
@@ -22,8 +23,16 @@ public class EmployeesController : ControllerBase
 	/// <response code="200">Успешное предоставление</response>
 	[ProducesResponseType(typeof(IEnumerable<EmployeeDTO>), 200)]
 	[HttpGet]
-    public async Task<ActionResult<IEnumerable<EmployeeDTO>>> GetEmployees() =>
-		Ok(await _repository.ReadAsync());
+    public async Task<ActionResult<IEnumerable<EmployeeDTO>>> GetEmployees()
+	{
+		IEnumerable<Employee> employees = await _repository.ReadAsync();
+
+		IEnumerable<EmployeeDTO> EmployeeDTOs =
+			employees.Select(x => new EmployeeDTO(x.Id, x.Name, x.FillialId));
+
+		return Ok(EmployeeDTOs);
+	}
+
 
 }
 

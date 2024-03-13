@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PrinterFil.Api.DataBase;
-using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
 namespace PrinterFil.Api.Repositories;
@@ -15,11 +14,10 @@ public class EmployeesRepository : IEmployeesRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<IEnumerable<EmployeeDTO>> ReadAsync()
+	public async Task<IEnumerable<Employee>> ReadAsync()
 	{
 		return await _context
 			.Employees
-			.Select(x => new EmployeeDTO(x.Id, x.Name, x.FillialId))
 			.ToListAsync();
 	}
 }

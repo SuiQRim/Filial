@@ -1,4 +1,4 @@
-﻿using PrinterFil.Api.Models;
+﻿using PrinterFil.Api.DataBase;
 
 namespace PrinterFil.Api.Repositories.IRepositories;
 
@@ -9,6 +9,6 @@ public interface IPrintingDevicesRepository
 	/// </summary>
 	/// <param name="connectionType">Тип подключения</param>
 	/// <returns>Список печатных установок</returns>
-	Task<IEnumerable<PrintingDeviceDTO>> ReadAsync(int? connectionType);
+	Task<IEnumerable<PrintingDevice>> ReadAsync(int? connectionType);
 }
 

@@ -15,11 +15,10 @@ public class FilialsRepository : IFilialsRepository
 	}
 
 	/// <inheritdoc/>
-	public async Task<IEnumerable<FilialDTO>> ReadAsync()
+	public async Task<IEnumerable<Filial>> ReadAsync()
 	{
 		return await _context
 			.Filials
-			.Select(x => new FilialDTO(x.Id, x.Location, x.Name))
 			.ToListAsync();
 	}
 }

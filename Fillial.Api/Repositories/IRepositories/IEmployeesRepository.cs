@@ -1,4 +1,4 @@
-﻿using PrinterFil.Api.Models;
+﻿using PrinterFil.Api.DataBase;
 
 namespace PrinterFil.Api.Repositories.IRepositories;
 
@@ -8,6 +8,6 @@ public interface IEmployeesRepository
 	/// Возвращает список сотрудников компании
 	/// </summary>
 	/// <returns></returns>
-	Task<IEnumerable<EmployeeDTO>> ReadAsync();
+	Task<IEnumerable<Employee>> ReadAsync();
 }
 

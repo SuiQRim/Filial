@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PrinterFil.Api.DataBase;
-using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
 namespace PrinterFil.Api.Repositories;
@@ -15,11 +14,10 @@ public class PrintingDevicesRepository : IPrintingDevicesRepository
 	}
 
 	/// <inheritdoc/>
-    public async Task<IEnumerable<PrintingDeviceDTO>> ReadAsync(int? connectionType)
+    public async Task<IEnumerable<PrintingDevice>> ReadAsync(int? connectionType)
 	{
 		return await _context.PrintingDevices
 			.Where(c => connectionType == null || c.ConnectionTypeId == connectionType)
-			.Select(x => new PrintingDeviceDTO(x.Id, x.Name, x.ConnectionTypeId, x.MacAddress))
 			.ToListAsync();
 	}
 }
