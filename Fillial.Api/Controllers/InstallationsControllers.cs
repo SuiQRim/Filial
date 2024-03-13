@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
+using System.Collections.Generic;
 
 namespace PrinterFil.Api.Controllers
 {
@@ -27,8 +28,18 @@ namespace PrinterFil.Api.Controllers
 		[ProducesResponseType(typeof(IEnumerable<InstallationResponseDTO>), 200)]
 		[ProducesResponseType(404)]
 		[HttpGet("collection")]
-		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int? filialId) =>
-			Ok(await _repository.ReadAsync(filialId));
+		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int? filialId)
+		{
+			IEnumerable<Installation> installations = await _repository.ReadAsync(filialId);
+
+			IEnumerable<InstallationResponseDTO> installationsDTO = 
+				installations.Select(i => new InstallationResponseDTO(
+					i.Id, i.Name, i.FillialId, i.DeviceId, 
+					i.Fillial.DefaultInstallationId == i.Id, i.Order));
+
+			return Ok(installationsDTO);
+		}
+
 
 		/// <summary>
 		/// Предоставляет инсталляцию
@@ -39,8 +50,19 @@ namespace PrinterFil.Api.Controllers
 		[ProducesResponseType(typeof(InstallationResponseDTO), 200)]
 		[ProducesResponseType(404)]
 		[HttpGet]
-		public async Task<ActionResult<InstallationResponseDTO>> Get([FromQuery] int id) =>
-			Ok(await _repository.ReadAsync(id));
+		public async Task<ActionResult<InstallationResponseDTO>> Get([FromQuery] int id)
+		{
+			Installation? install = await _repository.ReadAsync(id);
+			if (install == null)
+				return NotFound();
+
+			InstallationResponseDTO installationDTO = new (install.Id, 
+				install.Name, install.FillialId, install.DeviceId, 
+				install.Fillial.DefaultInstallationId == install.Id, install.Order);
+
+			return Ok(installationDTO);
+		}
+
 
 		/// <summary>
 		/// Добавляет новую инсталляцию
@@ -49,11 +71,36 @@ namespace PrinterFil.Api.Controllers
 		/// <returns>Идентификатор</returns>
 		/// <response code="202">Успешное добавление</response>
 		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
+		/// <response code="400">Плохой запрос</response>
 		[ProducesResponseType(typeof(int), 202)]
 		[ProducesResponseType(404)]
+		[ProducesResponseType(400)]
 		[HttpPost]
-		public async Task<ActionResult<int>> Add(InstallationDTO installation) =>
-			CreatedAtAction(nameof(Add), await _repository.CreateAsync(installation));
+		public async Task<ActionResult<int>> Add(InstallationDTO installation)
+		{
+			byte? order = await _repository.GetOrderAsync(installation.FilialId, installation.Order);
+			if (order == null)
+				return BadRequest("Предложенный порядковый номер не может быть использован");
+
+			Installation installationEntity = new()
+			{
+				FillialId = installation.FilialId,
+				Name = installation.Name,
+				DeviceId = installation.PrintingDeviceId,
+				Order = (byte)order
+			};
+
+			byte newOrder = await _repository.CreateAsync(installationEntity);
+
+			if (installation.IsDefault)
+			{
+				await _repository.UpdateDefaultInstallationAsync(installationEntity);
+			}
+			await _repository.SaveChangesAsync();
+
+			return CreatedAtAction(nameof(Add), newOrder);
+		}
+
 
 		/// <summary>
 		/// Удаляет инсталляцию
@@ -67,7 +114,16 @@ namespace PrinterFil.Api.Controllers
 		[HttpDelete]
 		public async Task<IActionResult> Delete(int id) 
 		{ 
+			Installation? installation = await _repository.ReadAsync(id);
+			if (installation == null)
+				return NotFound();
+
+			if(installation.Fillial.DefaultInstallationId == installation.Id)
+				await _repository.UpdateDefaultInstallationAsync(installation.FillialId);
+
 			await _repository.DeleteAsync(id);
+			await _repository.SaveChangesAsync();
+
 			return Ok();
 		}
 	}

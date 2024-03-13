@@ -20,21 +20,6 @@ namespace PrinterFil.Api.Middlewares
 			{
 				await next(context);
 			}
-			catch (EntityNotFoundExceptions e)
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				ProblemDetails problem = new()
-				{
-					Status = (int)HttpStatusCode.NotFound,
-					Type = HttpStatusCode.NotFound.ToString(),
-					Title = "Entity Not Found",
-					Detail = e.Message
-				};
-				var json = JsonSerializer.Serialize(problem);
-				context.Response.ContentType = "application/json";
-				await context.Response.WriteAsJsonAsync(json);
-			
-			}
 			catch (BadHttpRequestException e)
 			{
 				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;

@@ -57,7 +57,6 @@ public partial class FilialServerContext : DbContext
 
             entity.HasOne(d => d.DefaultInstallation).WithMany(p => p.Filials)
                 .HasForeignKey(d => d.DefaultInstallationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Filials_Installations");
         });
 

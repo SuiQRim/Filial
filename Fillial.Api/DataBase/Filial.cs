@@ -11,9 +11,9 @@ public partial class Filial
 
     public string? Location { get; set; }
 
-    public int DefaultInstallationId { get; set; }
+    public int? DefaultInstallationId { get; set; }
 
-    public virtual Installation DefaultInstallation { get; set; } = null!;
+    public virtual Installation? DefaultInstallation { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
