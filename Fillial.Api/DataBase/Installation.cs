@@ -20,6 +20,4 @@ public partial class Installation
     public virtual ICollection<Filial> Filials { get; set; } = new List<Filial>();
 
     public virtual Filial Fillial { get; set; } = null!;
-
-    public virtual ICollection<PrintJob> PrintJobs { get; set; } = new List<PrintJob>();
 }

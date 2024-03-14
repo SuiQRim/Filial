@@ -25,8 +25,6 @@ public partial class FilialServerContext : DbContext
 
     public virtual DbSet<PrintJob> PrintJobs { get; set; }
 
-    public virtual DbSet<PrintStatus> PrintStatuses { get; set; }
-
     public virtual DbSet<PrintingDevice> PrintingDevices { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -79,26 +77,11 @@ public partial class FilialServerContext : DbContext
 
         modelBuilder.Entity<PrintJob>(entity =>
         {
-            entity.Property(e => e.Task).HasMaxLength(2000);
+            entity.Property(e => e.Name).HasMaxLength(2000);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.PrintJobs)
                 .HasForeignKey(d => d.EmployeeId)
                 .HasConstraintName("FK_PrintJobs_Employees");
-
-            entity.HasOne(d => d.Installation).WithMany(p => p.PrintJobs)
-                .HasForeignKey(d => d.InstallationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PrintJobs_Installations");
-
-            entity.HasOne(d => d.Status).WithMany(p => p.PrintJobs)
-                .HasForeignKey(d => d.StatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PrintJobs_PrintStatuses");
-        });
-
-        modelBuilder.Entity<PrintStatus>(entity =>
-        {
-            entity.Property(e => e.Name).HasMaxLength(20);
         });
 
         modelBuilder.Entity<PrintingDevice>(entity =>

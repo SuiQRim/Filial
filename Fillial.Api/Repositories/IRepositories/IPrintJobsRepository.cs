@@ -6,17 +6,30 @@ namespace PrinterFil.Api.Repositories.IRepositories
 	public interface IPrintJobsRepository
 	{
 		/// <summary>
-		/// Создает задание печати
+		/// Добавляет задание печати
 		/// </summary>
-		/// <param name="printJobDTO"></param>
+		/// <param name="printJob"></param>
 		/// <returns></returns>
-		Task<PrintJob> CreateAsync(PrintJobDTO printJobDTO);
+		Task CreateAsync(PrintJob printJob);
 
 		/// <summary>
-		/// Создает множество заданий печати импортируя список из файла
+		/// Добавляет множество заданий печати
 		/// </summary>
-		/// <param name="uploadedFile">Файл с заданиями печати</param>
+		/// <param name="printJobs"></param>
 		/// <returns></returns>
-		Task<int> ImportAsync(IFormFile uploadedFile);
+		Task CreateRangeAsync(IEnumerable<PrintJob> printJobs);
+
+		/// <summary>
+		/// Предоставляет филиал, в котором будет выполнятся печать
+		/// </summary>
+		/// <param name="filialId">Идентификатор филиала</param>
+		/// <returns></returns>
+		Task<Filial?> GetRunningFilialAsync(int filialId);
+
+		/// <summary>
+		/// Сохраняет изменения
+		/// </summary>
+		/// <returns></returns>
+		Task SaveChangesAsync();
 	}
 }
