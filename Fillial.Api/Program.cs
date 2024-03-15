@@ -4,6 +4,7 @@ using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Middlewares;
 using PrinterFil.Api.Repositories;
 using PrinterFil.Api.Repositories.IRepositories;
+using PrinterFil.Api.Services;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -34,6 +35,8 @@ builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
 builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
 builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
+
+builder.Services.AddSingleton<IPrintingJobImporter, PrintingJobImporterCSV>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

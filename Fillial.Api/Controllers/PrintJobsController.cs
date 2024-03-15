@@ -1,13 +1,9 @@
-﻿using CsvHelper.Configuration;
-using CsvHelper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
-using System.Globalization;
-using System.Text;
-using CsvHelper.TypeConversion;
 using System.ComponentModel.DataAnnotations;
+using PrinterFil.Api.Services;
 
 namespace PrinterFil.Api.Controllers;
 
@@ -16,11 +12,13 @@ namespace PrinterFil.Api.Controllers;
 public class PrintJobsController : ControllerBase
 {
     private readonly IPrintJobsRepository _repository;
+	private readonly IPrintingJobImporter _printingJobImporter;
 
-    public PrintJobsController(IPrintJobsRepository repository)
+	public PrintJobsController(IPrintJobsRepository repository, IPrintingJobImporter printingJobImporter)
     {
 		_repository = repository;
-    }
+		_printingJobImporter = printingJobImporter;
+	}
 
 	/// <summary>
 	/// Регистрирует задание печати
@@ -71,6 +69,16 @@ public class PrintJobsController : ControllerBase
 		return Ok((bool)pj.IsSuccessful ? "Accepted" : "Rejected");
 	}
 
+	private static bool ImitateOfPrint()
+	{
+		Random rnd = new();
+
+		int time = rnd.Next(1000, 4000);
+		Task.Delay(time);
+
+		return rnd.Next(2) == 1;
+	}
+
 
 	/// <summary>
 	/// Импортирует файл, регистрируя каждую запись
@@ -79,94 +87,35 @@ public class PrintJobsController : ControllerBase
 	/// <returns>Количество выполненных печатей</returns>
 	/// <response code="200">Успешное добавление</response>
 	/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
-	/// <response code="422">Файл не валидный</response>
+	/// <response code="422">Не удалось считать файл</response>
 	[ProducesResponseType(typeof(int), 200)]
 	[ProducesResponseType(404)]
 	[ProducesResponseType(422)]
 	[HttpPost("import")]
 	public async Task<ActionResult<int>> ImportPrintJobCSV([Required]IFormFile uploadedFile)
 	{
-		string[] lines;
-		using (var reader = new StreamReader(uploadedFile.OpenReadStream()))
+		IEnumerable<PrintJobDTO> jobDTOs;
+		try
 		{
-			lines = ReadFirstLines(reader, 100);
+			jobDTOs = _printingJobImporter.Parse(uploadedFile);
+		}
+		catch (Exception)
+		{
+			return UnprocessableEntity();
 		}
 
-		List<PrintJobDTO> printJobDTOs = new(lines.Length);
-
-		using (var reader = new StringReader(string.Join(Environment.NewLine, lines)))
-		using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) 
-		{
-			HasHeaderRecord = false,
-			Delimiter = ";",
-			Encoding = Encoding.UTF8
-		}))
-		{
-			while (csv.Read())
-			{
-				try
-				{
-
-					PrintJobDTO pj = new(
-						csv.GetField<string>(0),
-						csv.GetField<int>(1),
-						csv.GetField<byte>(2),
-						csv.GetField<int>(3)
-					);
-
-					printJobDTOs.Add(pj);
-				}
-				catch (CsvHelperException ex) 
-				when (ex is CsvHelper.ValidationException || ex is TypeConverterException || ex is CsvHelper.MissingFieldException)
-				{
-					continue;
-				}
-				catch (CsvHelperException)
-				{
-					return UnprocessableEntity();
-				}
-
-			}
-		}
-
-		IEnumerable<PrintJob> jobs = printJobDTOs.Select(j => new PrintJob()
+		IEnumerable<PrintJob> jobs = jobDTOs.Select(j => new PrintJob()
 		{
 			Name = j.Name,
 			LayerCount = j.LayerCount,
 			EmployeeId = j.EmployeeId,
-			Order = (byte)j.InstallationOrder!,
-			IsSuccessful = true
+			Order = (byte)j.InstallationOrder!
 		});
 
 		await _repository.CreateRangeAsync(jobs);
 		await _repository.SaveChangesAsync();
 
 		return Ok(jobs.Count());
-	}
-
-	private static bool ImitateOfPrint()
-	{
-		Random rnd = new();
-
-		int time = rnd.Next(1000, 4000);
-		Task.Delay(time);
-		
-		return rnd.Next(2) == 1;
-	}
-
-	private string[] ReadFirstLines(StreamReader reader, int maxLines)
-	{
-		List<string> lines = new (maxLines);
-		for (int i = 0; i < maxLines; i++)
-		{
-			var line = reader.ReadLine();
-
-			if (line == null)
-				break;
-			
-			lines.Add(line);
-		}
-		return lines.ToArray();
 	}
 
 }
