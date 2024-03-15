@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PrinterFil.Api.DataBase;
-using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
-using System.Linq;
 
 namespace PrinterFil.Api.Repositories;
 

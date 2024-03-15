@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PrinterFil.Api.Exceptions;
 using System.Net;
 using System.Text.Json;
 
