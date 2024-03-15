@@ -28,7 +28,7 @@ public class EmployeesController : ControllerBase
 		IEnumerable<Employee> employees = await _repository.ReadAsync();
 
 		IEnumerable<EmployeeDTO> EmployeeDTOs =
-			employees.Select(x => new EmployeeDTO(x.Id, x.Name, x.FillialId));
+			employees.Select(x => new EmployeeDTO(x.Id, x.Name, x.FilialId));
 
 		return Ok(EmployeeDTOs);
 	}

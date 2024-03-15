@@ -18,7 +18,7 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		return await _context
 			.Installations
-			.Where(i => filialId == null || i.FillialId == filialId)
+			.Where(i => filialId == null || i.FilialId == filialId)
 			.Include(i => i.Filials)
 			.ToArrayAsync();
 	}
@@ -28,7 +28,7 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		return await _context
 			.Installations
-			.Include(i => i.Fillial)
+			.Include(i => i.Filial)
 			.SingleOrDefaultAsync(x => x.Id == id);
 	}
 
@@ -42,7 +42,7 @@ public class InstallationsRepository : IInstallationsRepository
 	/// <inheritdoc/>
 	public async Task UpdateDefaultInstallationAsync(Installation installation)
 	{
-		Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FillialId);
+		Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FilialId);
 		filial.DefaultInstallation = installation;
 	}
 
@@ -51,10 +51,10 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		Installation installation = await _context
 			.Installations
-			.Include(i => i.Fillial)
+			.Include(i => i.Filial)
 			.FirstAsync();
 
-		installation.Fillial.DefaultInstallation = installation;
+		installation.Filial.DefaultInstallation = installation;
 	}
 
 	/// <inheritdoc/>
@@ -73,7 +73,7 @@ public class InstallationsRepository : IInstallationsRepository
 		}
 
 		Installation? installation = await _context
-			.Installations.SingleOrDefaultAsync(x => x.FillialId == filialId && x.Order == order);
+			.Installations.SingleOrDefaultAsync(x => x.FilialId == filialId && x.Order == order);
 
 		return installation == null ? order : null;
 	}

@@ -34,8 +34,8 @@ namespace PrinterFil.Api.Controllers
 
 			IEnumerable<InstallationResponseDTO> installationsDTO = 
 				installations.Select(i => new InstallationResponseDTO(
-					i.Id, i.Name, i.FillialId, i.DeviceId, 
-					i.Fillial.DefaultInstallationId == i.Id, i.Order));
+					i.Id, i.Name, i.FilialId, i.DeviceId, 
+					i.Filial.DefaultInstallationId == i.Id, i.Order));
 
 			return Ok(installationsDTO);
 		}
@@ -57,8 +57,8 @@ namespace PrinterFil.Api.Controllers
 				return NotFound();
 
 			InstallationResponseDTO installationDTO = new (install.Id, 
-				install.Name, install.FillialId, install.DeviceId, 
-				install.Fillial.DefaultInstallationId == install.Id, install.Order);
+				install.Name, install.FilialId, install.DeviceId, 
+				install.Filial.DefaultInstallationId == install.Id, install.Order);
 
 			return Ok(installationDTO);
 		}
@@ -84,7 +84,7 @@ namespace PrinterFil.Api.Controllers
 
 			Installation installationEntity = new()
 			{
-				FillialId = installation.FilialId,
+				FilialId = installation.FilialId,
 				Name = installation.Name,
 				DeviceId = installation.PrintingDeviceId,
 				Order = (byte)order
@@ -118,8 +118,8 @@ namespace PrinterFil.Api.Controllers
 			if (installation == null)
 				return NotFound();
 
-			if(installation.Fillial.DefaultInstallationId == installation.Id)
-				await _repository.UpdateDefaultInstallationAsync(installation.FillialId);
+			if(installation.Filial.DefaultInstallationId == installation.Id)
+				await _repository.UpdateDefaultInstallationAsync(installation.FilialId);
 
 			await _repository.DeleteAsync(id);
 			await _repository.SaveChangesAsync();

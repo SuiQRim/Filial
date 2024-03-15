@@ -40,8 +40,8 @@ public partial class FilialServerContext : DbContext
         {
             entity.Property(e => e.Name).HasMaxLength(50);
 
-            entity.HasOne(d => d.Fillial).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.FillialId)
+            entity.HasOne(d => d.Filial).WithMany(p => p.Employees)
+                .HasForeignKey(d => d.FilialId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Employees_Fillials");
         });
@@ -69,8 +69,8 @@ public partial class FilialServerContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Installations_PrintingDevices");
 
-            entity.HasOne(d => d.Fillial).WithMany(p => p.Installations)
-                .HasForeignKey(d => d.FillialId)
+            entity.HasOne(d => d.Filial).WithMany(p => p.Installations)
+                .HasForeignKey(d => d.FilialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Installations_Fillials");
         });

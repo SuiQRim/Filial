@@ -9,9 +9,9 @@ public partial class Employee
 
     public string Name { get; set; } = null!;
 
-    public int? FillialId { get; set; }
+    public int? FilialId { get; set; }
 
-    public virtual Filial? Fillial { get; set; }
+    public virtual Filial? Filial { get; set; }
 
     public virtual ICollection<PrintJob> PrintJobs { get; set; } = new List<PrintJob>();
 }
