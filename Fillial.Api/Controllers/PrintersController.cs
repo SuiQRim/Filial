@@ -21,6 +21,10 @@ public class PrintersController : ControllerBase
 	/// </summary>
 	/// <param name="connectionType">Тип подключения</param>
 	/// <returns>Список печатных устройств</returns>
+	/// <remarks>
+	/// <para><b>1</b> - локальные устройства</para>
+	/// <para><b>2</b> - сетевые устройства</para>
+	/// </remarks>
 	/// <response code="200">Успешное предоставление</response>
 	/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
 	[ProducesResponseType(typeof(IEnumerable<PrinterDTO>), 200)]
