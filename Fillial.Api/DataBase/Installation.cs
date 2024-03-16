@@ -15,7 +15,7 @@ public partial class Installation
 
     public byte Order { get; set; }
 
-    public virtual PrintingDevice Device { get; set; } = null!;
+    public virtual Printer Device { get; set; } = null!;
 
     public virtual Filial Filial { get; set; } = null!;
 

@@ -2,13 +2,12 @@
 
 namespace PrinterFil.Api.Repositories.IRepositories;
 
-public interface IPrintingDevicesRepository
+public interface IPrintersRepository
 {
 	/// <summary>
 	/// Возвращает список печатных установок
 	/// </summary>
-	/// <param name="connectionType">Тип подключения</param>
 	/// <returns>Список печатных установок</returns>
-	Task<IEnumerable<PrintingDevice>> ReadAsync(int? connectionType);
+	Task<IEnumerable<Printer>> ReadAsync<T>() where T : Printer;
 }
 

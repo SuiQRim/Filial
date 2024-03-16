@@ -5,7 +5,7 @@
 	/// </summary>
 	/// <param name="Id">Идентификатор</param>
 	/// <param name="Name">Название</param>
-	/// <param name="ConnectionType">Тип подключения</param>
+	/// <param name="Type">Тип устройства</param>
 	/// <param name="MacAddress">Мак адрес</param>
-	public record PrintingDeviceDTO(int Id, string Name, int ConnectionType, string? MacAddress);
+	public record PrinterDTO(int Id, string Name, string Type, string? MacAddress = null);
 }

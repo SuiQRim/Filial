@@ -33,7 +33,7 @@ builder.Services.AddDbContext<FilialServerContext>(options =>
 builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>();
 builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
-builder.Services.AddScoped<IPrintingDevicesRepository, PrintingDevicesRepository>();
+builder.Services.AddScoped<IPrintersRepository, PrintersRepository>();
 builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
 
 builder.Services.AddSingleton<IPrintingJobImporter, PrintingJobImporterCSV>();
