@@ -60,7 +60,7 @@ public class PrintJobsController : ControllerBase
 			Name = printJob.Name,
 			Order = installation.Order,
 			LayerCount = printJob.LayerCount,
-			IsSuccessful = ImitateOfPrint()
+			IsSuccessful = await ImitateOfPrint()
 		};
 
 		await _repository.CreateAsync(pj);
@@ -69,12 +69,12 @@ public class PrintJobsController : ControllerBase
 		return Ok((bool)pj.IsSuccessful ? "Accepted" : "Rejected");
 	}
 
-	private static bool ImitateOfPrint()
+	private static async Task<bool> ImitateOfPrint()
 	{
 		Random rnd = new();
 
 		int time = rnd.Next(1000, 4000);
-		Task.Delay(time);
+		await Task.Delay(time);
 
 		return rnd.Next(2) == 1;
 	}
