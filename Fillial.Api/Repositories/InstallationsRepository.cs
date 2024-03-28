@@ -13,18 +13,13 @@ public class InstallationsRepository : IInstallationsRepository
 		_context = context;
 	}
 
-	/// <inheritdoc/>
 	public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
-		//return await _context
-		//	.Installations
-		//	.Where(i => filialId == null || i.FilialId == filialId)
-		//	.Include(i => i.Filials)
-		//	.ToArrayAsync();
-		return null;
+		return await _context
+			.Installations
+			.Where(i => filialId == null || i.FilialId == filialId)
+			.ToArrayAsync();
 	}
-
-	/// <inheritdoc/>
 	public async Task<Installation?> ReadAsync(int id)
 	{
 		return await _context
@@ -32,21 +27,19 @@ public class InstallationsRepository : IInstallationsRepository
 			.SingleOrDefaultAsync(x => x.Id == id);
 	}
 
-	/// <inheritdoc/>
 	public async Task<byte> CreateAsync(Installation installation)
 	{
 		await _context.Installations.AddAsync(installation);
 		return installation.Order;
 	}
 
-	/// <inheritdoc/>
 	public async Task UpdateDefaultInstallationAsync(Installation installation)
 	{
 		//Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FilialId);
 		//filial.DefaultInstallation = installation;
 	}
 
-	/// <inheritdoc/>
+
 	public async Task UpdateDefaultInstallationAsync(int filialId)
 	{
 		//Installation installation = await _context
@@ -57,14 +50,12 @@ public class InstallationsRepository : IInstallationsRepository
 		//installation.Filial.DefaultInstallation = installation;
 	}
 
-	/// <inheritdoc/>
 	public async Task DeleteAsync(int id)
 	{
 		Installation? installation = await _context.Installations.SingleAsync(i => i.Id == id);
 		_context.Installations.Remove(installation);
 	}
 
-	/// <inheritdoc/>
 	public async Task<byte?> GetOrderAsync(int filialId, byte? order)
 	{
 		if (order == null || order == 0)
@@ -78,6 +69,5 @@ public class InstallationsRepository : IInstallationsRepository
 		return installation == null ? order : null;
 	}
 
-	/// <inheritdoc/>
 	public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
 }

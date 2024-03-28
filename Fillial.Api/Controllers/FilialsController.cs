@@ -23,7 +23,7 @@ public class FilialsController : ControllerBase
 	/// <response code="200">Успешное предоставление</response>
 	[ProducesResponseType(typeof(IEnumerable<FilialDTO>), 200)]
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<FilialDTO>>> GetFilials()
+	public async Task<ActionResult<IEnumerable<Filial>>> GetFilials()
 	{
 		IEnumerable<Filial> filials = await _repository.ReadAsync();
 

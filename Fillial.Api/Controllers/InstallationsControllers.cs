@@ -68,10 +68,10 @@ namespace PrinterFil.Api.Controllers
 		/// </summary>
 		/// <param name="installation">Инсталляция</param>
 		/// <returns>Идентификатор</returns>
-		/// <response code="202">Успешное добавление</response>
+		/// <response code="201">Успешное добавление</response>
 		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
 		/// <response code="400">Плохой запрос</response>
-		[ProducesResponseType(typeof(int), 202)]
+		[ProducesResponseType(typeof(int), 201)]
 		[ProducesResponseType(404)]
 		[ProducesResponseType(400)]
 		[HttpPost]

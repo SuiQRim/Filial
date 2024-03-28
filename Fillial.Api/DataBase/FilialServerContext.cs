@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace PrinterFil.Api.DataBase;
 
@@ -37,7 +38,7 @@ public partial class FilialServerContext : DbContext
 		modelBuilder.Entity<Installation>(entity =>
         {
 			entity.HasOne(e => e.Device)
-				.WithOne()
+				.WithMany()
 				.IsRequired();
 		});
 
@@ -62,8 +63,130 @@ public partial class FilialServerContext : DbContext
                 .IsRequired();
         });
 
-        OnModelCreatingPartial(modelBuilder);
-    }
+		CreateData(modelBuilder);
+		OnModelCreatingPartial(modelBuilder);
+	}
+
+    private void CreateData(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Filial>().HasData([
+            new Filial {
+				Id = 1,
+				Name = "Тридевятое царство"
+            },
+			new Filial {
+				Id = 2,
+				Name = "Дремучий лес"
+			},
+			new Filial {
+				Id = 3,
+				Name = "Луна"
+			}
+		]);
+
+	   modelBuilder.Entity<Employee>().HasData([
+            new Employee () {
+                Id = 1,
+                Name = "Царь",
+				FilialId = 1
+			},
+			new Employee () {
+				Id = 2,
+				Name = "Яга",
+				FilialId = 1
+			},
+			new Employee () {
+				Id = 3,
+				Name = "Копатыч",
+				FilialId = 3
+			},
+			new Employee () {
+				Id = 4,
+				Name = "Добрыня",
+				FilialId = 1
+			},
+			new Employee () {
+				Id = 5,
+				Name = "Кощей",
+				FilialId = 3
+			},
+			new Employee () {
+				Id = 6,
+				Name = "Лосяш",
+				FilialId = 3
+			},
+		]);
+
+		modelBuilder.Entity<Printer>().HasData([
+			new Printer {
+				Id = 1,
+				Name = "Папирус"
+			},
+			new Printer {
+				Id = 2,
+				Name = "Бумага"
+			}
+		]);
+
+		modelBuilder.Entity<NetworkPrinter>().HasData([
+			new NetworkPrinter {
+				Id = 3,
+				Name = "Камень",
+				MacAddress = "abababababab"
+			},
+		]);
+
+		modelBuilder.Entity<Installation>().HasData([
+			new Installation {
+				Id = 1,
+				Name = "Дворец",
+				FilialId = 1,
+				Order = 1,
+				DeviceId = 1,
+				IsDefault = true
+			},
+			new Installation {
+				Id = 2,
+				Name = "Конюшни",
+				FilialId = 1,
+				Order = 2,
+				DeviceId = 2,
+				IsDefault = false
+			},
+			new Installation {
+				Id = 3,
+				Name = "Оружейная",
+				FilialId = 3,
+				Order = 3,
+				DeviceId = 3,
+				IsDefault = false
+			},
+			new Installation {
+				Id = 4,
+				Name = "Кратер",
+				FilialId = 2,
+				Order = 1,
+				DeviceId = 1,
+				IsDefault = true
+			},
+			new Installation {
+				Id = 5,
+				Name = "Избушка",
+				FilialId = 2,
+				Order = 2,
+				DeviceId = 3,
+				IsDefault = false
+			},
+			new Installation {
+				Id = 6,
+				Name = "Топи",
+				FilialId = 2,
+				Order = 1,
+				DeviceId = 2,
+				IsDefault = true
+			}
+		]);
+	}
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
