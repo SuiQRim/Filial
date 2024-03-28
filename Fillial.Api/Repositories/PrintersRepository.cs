@@ -12,12 +12,14 @@ public class PrintersRepository : IPrintersRepository
 	{
 		_context = context;
 	}
-
-	/// <inheritdoc/>
-    public async Task<IEnumerable<Printer>> ReadAsync<T>() where T : Printer
+	public async Task<IEnumerable<Printer>> ReadAsync()
 	{
-		return await _context.Printers.OfType<T>().ToListAsync();
+		return await _context.Printers.ToListAsync();
 	}
 
+	public async Task<IEnumerable<Printer>> ReadAsync<T>() where T : Printer
+	{
+		return await _context.Printers.Where(p => p.GetType() == typeof(T)).ToListAsync();
+	}
 }
 

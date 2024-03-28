@@ -16,11 +16,12 @@ public class InstallationsRepository : IInstallationsRepository
 	/// <inheritdoc/>
 	public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
-		return await _context
-			.Installations
-			.Where(i => filialId == null || i.FilialId == filialId)
-			.Include(i => i.Filials)
-			.ToArrayAsync();
+		//return await _context
+		//	.Installations
+		//	.Where(i => filialId == null || i.FilialId == filialId)
+		//	.Include(i => i.Filials)
+		//	.ToArrayAsync();
+		return null;
 	}
 
 	/// <inheritdoc/>
@@ -28,7 +29,6 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		return await _context
 			.Installations
-			.Include(i => i.Filial)
 			.SingleOrDefaultAsync(x => x.Id == id);
 	}
 
@@ -42,19 +42,19 @@ public class InstallationsRepository : IInstallationsRepository
 	/// <inheritdoc/>
 	public async Task UpdateDefaultInstallationAsync(Installation installation)
 	{
-		Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FilialId);
-		filial.DefaultInstallation = installation;
+		//Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FilialId);
+		//filial.DefaultInstallation = installation;
 	}
 
 	/// <inheritdoc/>
 	public async Task UpdateDefaultInstallationAsync(int filialId)
 	{
-		Installation installation = await _context
-			.Installations
-			.Include(i => i.Filial)
-			.FirstAsync();
+		//Installation installation = await _context
+		//	.Installations
+		//	.Include(i => i.Filial)
+		//	.SingleOrDefaultAsync(i => i.FilialId == filialId);
 
-		installation.Filial.DefaultInstallation = installation;
+		//installation.Filial.DefaultInstallation = installation;
 	}
 
 	/// <inheritdoc/>

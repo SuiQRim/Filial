@@ -1,7 +1,10 @@
-﻿namespace PrinterFil.Api.DataBase
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PrinterFil.Api.DataBase
 {
 	public class NetworkPrinter : Printer
 	{
-		public string MacAddress { get; set; } = null!;
+		[StringLength(12)]
+		public required string MacAddress { get; set; }
 	}
 }

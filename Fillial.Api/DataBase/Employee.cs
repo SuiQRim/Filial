@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.DataBase;
 
 public partial class Employee
 {
-    public int Id { get; set; }
+	[Key]
+	public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
+    [StringLength(20)]
+    public required string Name { get; set; }
 
     public int? FilialId { get; set; }
-
-    public virtual Filial? Filial { get; set; }
-
-    public virtual ICollection<PrintJob> PrintJobs { get; set; } = new List<PrintJob>();
 }

@@ -34,8 +34,8 @@ public class PrintersController : ControllerBase
 	{
 		IEnumerable<Printer>? printers = connectionType switch
 		{
-			null => await _repository.ReadAsync<Printer>(),
-			1 => await _repository.ReadAsync<LocalPrinter>(),
+			null => await _repository.ReadAsync(),
+			1 => await _repository.ReadAsync<Printer>(),
 			2 => await _repository.ReadAsync<NetworkPrinter>(),
 			_ => null
 		};
@@ -50,8 +50,7 @@ public class PrintersController : ControllerBase
 		printer switch
 		{
 			NetworkPrinter p => new PrinterDTO(p.Id, p.Name, "Network", p.MacAddress),
-			LocalPrinter p => new PrinterDTO(p.Id, p.Name, "Local"),
-			_ => throw new InvalidOperationException("Unknown printer type")
+			Printer p => new PrinterDTO(p.Id, p.Name, "Local")
 		};
 }
 

@@ -32,41 +32,42 @@ public class PrintJobsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<string>> PostPrintJob(PrintJobDTO printJob)
 	{
-		Filial? filial = await _repository.GetRunningFilialAsync(printJob.EmployeeId);
-		if (filial == null)
-			return NotFound("В наших филиалах не найден такой сотрудник");
+		//Filial? filial = await _repository.GetRunningFilialAsync(printJob.EmployeeId);
+		//if (filial == null)
+		//	return NotFound("В наших филиалах не найден такой сотрудник");
 
-		Installation? installation;
-		if (printJob.InstallationOrder == null)
-		{
-			installation = filial.DefaultInstallation;
+		//Installation? installation;
+		//if (printJob.InstallationOrder == null)
+		//{
+		//	installation = filial.DefaultInstallation;
 
-			if (installation == null)
-				return NotFound($"Сотрудник не может выполнить печать из-за отсутствия инсталляций");
-		}
-		else
-		{
-			installation = filial.Installations
-				.Where(i => i.Order == printJob.InstallationOrder)
-				.FirstOrDefault();
+		//	if (installation == null)
+		//		return NotFound($"Сотрудник не может выполнить печать из-за отсутствия инсталляций");
+		//}
+		//else
+		//{
+		//	installation = filial.Installations
+		//		.Where(i => i.Order == printJob.InstallationOrder)
+		//		.FirstOrDefault();
 
-			if (installation == null)
-				return NotFound($"Инсталляция с предложенным порядковым номером не найдена");
-		}
+		//	if (installation == null)
+		//		return NotFound($"Инсталляция с предложенным порядковым номером не найдена");
+		//}
 
-		PrintJob pj = new()
-		{
-			EmployeeId = printJob.EmployeeId,
-			Name = printJob.Name,
-			Order = installation.Order,
-			LayerCount = printJob.LayerCount,
-			IsSuccessful = await ImitateOfPrint()
-		};
+		//PrintJob pj = new()
+		//{
+		//	EmployeeId = printJob.EmployeeId,
+		//	Name = printJob.Name,
+		//	Order = installation.Order,
+		//	LayerCount = printJob.LayerCount,
+		//	IsSuccessful = await ImitateOfPrint()
+		//};
 
-		await _repository.CreateAsync(pj);
-		await _repository.SaveChangesAsync();
+		//await _repository.CreateAsync(pj);
+		//await _repository.SaveChangesAsync();
 
-		return Ok((bool)pj.IsSuccessful ? "Accepted" : "Rejected");
+		//return Ok((bool)pj.IsSuccessful ? "Accepted" : "Rejected");
+		return Ok();
 	}
 
 	private static async Task<bool> ImitateOfPrint()

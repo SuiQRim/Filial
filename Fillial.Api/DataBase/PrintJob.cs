@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.DataBase;
 
 public partial class PrintJob
 {
-    public int Id { get; set; }
+	[Key]
+	public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
+	[StringLength(2000)]
+	public required string Name { get; set; }
 
     public int EmployeeId { get; set; }
 

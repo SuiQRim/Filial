@@ -4,6 +4,8 @@ namespace PrinterFil.Api.Repositories.IRepositories;
 
 public interface IPrintersRepository
 {
+	Task<IEnumerable<Printer>> ReadAsync();
+
 	/// <summary>
 	/// Возвращает список печатных установок
 	/// </summary>

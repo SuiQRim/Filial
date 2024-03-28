@@ -11,7 +11,9 @@ public partial class FilialServerContext : DbContext
     public FilialServerContext(DbContextOptions<FilialServerContext> options)
         : base(options)
     {
-    }
+        Database.EnsureDeleted();
+		Database.EnsureCreated();
+	}
 
     public virtual DbSet<Employee> Employees { get; set; }
 
@@ -29,55 +31,35 @@ public partial class FilialServerContext : DbContext
     {
         modelBuilder.Entity<Printer>().UseTphMappingStrategy()
             .HasDiscriminator<string>("Type")
-            .HasValue<LocalPrinter>("Local")
-            .HasValue<NetworkPrinter>("Network");
+            .HasValue<Printer>("Local")
+			.HasValue<NetworkPrinter>("Network");
 
-        modelBuilder.Entity<Employee>(entity =>
+		modelBuilder.Entity<Installation>(entity =>
         {
-            entity.Property(e => e.Name).HasMaxLength(50);
+			entity.HasOne(e => e.Device)
+				.WithOne()
+				.IsRequired();
+		});
 
-            entity.HasOne(d => d.Filial).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.FilialId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_Employees_Fillials");
-        });
+		modelBuilder.Entity<Filial>(entity =>
+		{
+			entity.HasMany(e => e.Installations)
+				.WithOne()
+				.HasForeignKey(e => e.FilialId)
+				.IsRequired();
 
-        modelBuilder.Entity<Filial>(entity =>
+			entity.HasMany(e => e.Employees)
+				.WithOne()
+				.HasForeignKey(e => e.FilialId)
+				.IsRequired();
+		});
+
+		modelBuilder.Entity<PrintJob>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Fillials");
-
-            entity.Property(e => e.Location).HasMaxLength(50);
-            entity.Property(e => e.Name).HasMaxLength(50);
-
-            entity.HasOne(d => d.DefaultInstallation).WithMany(p => p.Filials)
-                .HasForeignKey(d => d.DefaultInstallationId)
-                .HasConstraintName("FK_Filials_Installations");
-        });
-
-        modelBuilder.Entity<Installation>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_Installation");
-
-            entity.Property(e => e.Name).HasMaxLength(50);
-
-            entity.HasOne(d => d.Device).WithMany(p => p.Installations)
-                .HasForeignKey(d => d.DeviceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Installations_PrintingDevices");
-
-            entity.HasOne(d => d.Filial).WithMany(p => p.Installations)
-                .HasForeignKey(d => d.FilialId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Installations_Fillials");
-        });
-
-        modelBuilder.Entity<PrintJob>(entity =>
-        {
-            entity.Property(e => e.Name).HasMaxLength(2000);
-
-            entity.HasOne(d => d.Employee).WithMany(p => p.PrintJobs)
+            entity.HasOne(d => d.Employee)
+                .WithMany()
                 .HasForeignKey(d => d.EmployeeId)
-                .HasConstraintName("FK_PrintJobs_Employees");
+                .IsRequired();
         });
 
         OnModelCreatingPartial(modelBuilder);

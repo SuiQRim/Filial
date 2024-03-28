@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.DataBase;
 
 public partial class Filial
 {
+	[Key]
     public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
+	[StringLength(20)]
+	public required string Name { get; set; }
 
-    public string? Location { get; set; }
-
-    public int? DefaultInstallationId { get; set; }
-
-    public virtual Installation? DefaultInstallation { get; set; }
+	[StringLength(20)]
+	public string? Location { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 

@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.DataBase;
 
 public partial class Installation
 {
-    public int Id { get; set; }
+	[Key]
+	public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
+	[StringLength(20)]
+	public required string Name { get; set; }
 
-    public int DeviceId { get; set; }
+	public int FilialId { get; set; }
 
-    public int FilialId { get; set; }
-
+	[Range(1,byte.MaxValue)]
     public byte Order { get; set; }
 
-    public virtual Printer Device { get; set; } = null!;
+    public bool IsDefault { get; set; }
 
-    public virtual Filial Filial { get; set; } = null!;
+	public int DeviceId { get; set; }
 
-    public virtual ICollection<Filial> Filials { get; set; } = new List<Filial>();
+	public virtual Printer Device { get; set; } = null!;
 }
