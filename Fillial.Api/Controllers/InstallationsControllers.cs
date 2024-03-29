@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace PrinterFil.Api.Controllers
 {
@@ -49,7 +48,7 @@ namespace PrinterFil.Api.Controllers
 		[ProducesResponseType(typeof(InstallationResponseDTO), 200)]
 		[ProducesResponseType(404)]
 		[HttpGet]
-		public async Task<ActionResult<InstallationResponseDTO>> Get([FromQuery] int id)
+		public async Task<ActionResult<InstallationResponseDTO>> Get([Required][FromQuery] int id)
 		{
 			Installation? install = await _repository.ReadAsync(id);
 			if (install == null)
@@ -69,35 +68,55 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="installation">Инсталляция</param>
 		/// <returns>Идентификатор</returns>
 		/// <response code="201">Успешное добавление</response>
-		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
 		/// <response code="400">Плохой запрос</response>
 		[ProducesResponseType(typeof(int), 201)]
-		[ProducesResponseType(404)]
 		[ProducesResponseType(400)]
 		[HttpPost]
 		public async Task<ActionResult<int>> Add(InstallationDTO installation)
 		{
-			byte? order = await _repository.GetOrderAsync(installation.FilialId, installation.Order);
-			if (order == null)
-				return BadRequest("Предложенный порядковый номер не может быть использован");
+			byte? maxOrder = await GetOrderAsync(installation.FilialId, installation.Order);
 
-			Installation installationEntity = new()
+			if (maxOrder == null)
+				return BadRequest();
+			        
+			Installation newInstallation = new()
 			{
 				FilialId = installation.FilialId,
 				Name = installation.Name,
 				DeviceId = installation.PrintingDeviceId,
-				Order = (byte)order
+				IsDefault = installation.IsDefault,
+				Order = (byte)maxOrder
 			};
 
-			byte newOrder = await _repository.CreateAsync(installationEntity);
-
-			if (installation.IsDefault)
+			if (newInstallation.IsDefault)
 			{
-				await _repository.UpdateDefaultInstallationAsync(installationEntity);
+				Installation? defaultInstallation = await _repository.ReadDefaultAsync(installation.FilialId);
+				if (defaultInstallation != null)
+					defaultInstallation.IsDefault = false;
 			}
+
+			if (!await _repository.AnyInFilial(installation.FilialId))
+			{
+				newInstallation.IsDefault = true;
+			}
+
+			await _repository.CreateAsync(newInstallation);
 			await _repository.SaveChangesAsync();
 
-			return CreatedAtAction(nameof(Add), newOrder);
+			return CreatedAtAction(nameof(Add), newInstallation.Id);
+		}
+
+		private async Task<byte?> GetOrderAsync(int filialId, byte? order)
+		{
+			if (order == null)
+			{
+				return (byte)(await _repository.GetOrderAsync(filialId) + 1);
+			}
+			else if (!await _repository.Exist(filialId, (byte)order))
+			{
+				return (byte)order;
+			}
+			return null;
 		}
 
 
@@ -117,10 +136,18 @@ namespace PrinterFil.Api.Controllers
 			if (installation == null)
 				return NotFound();
 
-			//if(installation.Filial.DefaultInstallationId == installation.Id)
-			//	await _repository.UpdateDefaultInstallationAsync(installation.FilialId);
-
 			await _repository.DeleteAsync(id);
+
+			if (installation.IsDefault)
+			{
+				Installation? newDefaultInstallation = await _repository.ReadFirstAsync(installation.FilialId);
+
+				if (newDefaultInstallation != null)
+				{
+					newDefaultInstallation.IsDefault = true;
+				}
+			}
+
 			await _repository.SaveChangesAsync();
 
 			return Ok();

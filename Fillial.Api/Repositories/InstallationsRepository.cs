@@ -27,46 +27,46 @@ public class InstallationsRepository : IInstallationsRepository
 			.SingleOrDefaultAsync(x => x.Id == id);
 	}
 
-	public async Task<byte> CreateAsync(Installation installation)
+	public async Task<Installation?> ReadDefaultAsync(int filialId)
+	{
+		return await _context.Installations.SingleOrDefaultAsync(i => i.FilialId == filialId && i.IsDefault);
+	}
+
+	public async Task<Installation?> ReadFirstAsync(int filialId)
+	{
+		return await _context.Installations.Where(i => i.FilialId == filialId).FirstOrDefaultAsync();
+	}
+
+	public async Task CreateAsync(Installation installation)
 	{
 		await _context.Installations.AddAsync(installation);
-		return installation.Order;
-	}
-
-	public async Task UpdateDefaultInstallationAsync(Installation installation)
-	{
-		//Filial filial = await _context.Filials.SingleAsync(f => f.Id == installation.FilialId);
-		//filial.DefaultInstallation = installation;
-	}
-
-
-	public async Task UpdateDefaultInstallationAsync(int filialId)
-	{
-		//Installation installation = await _context
-		//	.Installations
-		//	.Include(i => i.Filial)
-		//	.SingleOrDefaultAsync(i => i.FilialId == filialId);
-
-		//installation.Filial.DefaultInstallation = installation;
 	}
 
 	public async Task DeleteAsync(int id)
 	{
-		Installation? installation = await _context.Installations.SingleAsync(i => i.Id == id);
-		_context.Installations.Remove(installation);
+		Installation? installation = await _context.Installations.SingleOrDefaultAsync(i => i.Id == id);
+		if (installation != null)
+		{
+			_context.Installations.Remove(installation);
+		}	
 	}
 
-	public async Task<byte?> GetOrderAsync(int filialId, byte? order)
+	public async Task<byte> GetOrderAsync(int filialId)
 	{
-		if (order == null || order == 0)
-		{
-			return (byte)await _context.Installations.MaxAsync(x => x.Order + 1);
-		}
+		return await _context.Installations
+			.Where(i => i.FilialId == filialId)
+			.Select(p => p.Order)
+			.DefaultIfEmpty()
+			.MaxAsync();
+	}
+	public async Task<bool> Exist(int filialId, byte order)
+	{
+		return await _context.Installations.AnyAsync(x => x.FilialId == filialId && x.Order == order);
+	}
 
-		Installation? installation = await _context
-			.Installations.SingleOrDefaultAsync(x => x.FilialId == filialId && x.Order == order);
-
-		return installation == null ? order : null;
+	public async Task<bool> AnyInFilial(int filialId)
+	{
+		return await _context.Installations.AnyAsync(i => i.FilialId == filialId);
 	}
 
 	public async Task SaveChangesAsync() => await _context.SaveChangesAsync();

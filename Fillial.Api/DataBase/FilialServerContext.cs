@@ -12,7 +12,6 @@ public partial class FilialServerContext : DbContext
     public FilialServerContext(DbContextOptions<FilialServerContext> options)
         : base(options)
     {
-        Database.EnsureDeleted();
 		Database.EnsureCreated();
 	}
 
@@ -156,7 +155,7 @@ public partial class FilialServerContext : DbContext
 			new Installation {
 				Id = 3,
 				Name = "Оружейная",
-				FilialId = 3,
+				FilialId = 1,
 				Order = 3,
 				DeviceId = 3,
 				IsDefault = false
@@ -164,7 +163,7 @@ public partial class FilialServerContext : DbContext
 			new Installation {
 				Id = 4,
 				Name = "Кратер",
-				FilialId = 2,
+				FilialId = 3,
 				Order = 1,
 				DeviceId = 1,
 				IsDefault = true

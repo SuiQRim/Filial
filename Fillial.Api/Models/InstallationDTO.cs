@@ -15,5 +15,6 @@ namespace PrinterFil.Api.Models
 		int FilialId, 
 		int PrintingDeviceId,
 		bool IsDefault,
+		[Range(1, byte.MaxValue)]
 		byte? Order);
 }
