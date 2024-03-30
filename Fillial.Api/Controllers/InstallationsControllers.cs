@@ -95,7 +95,7 @@ namespace PrinterFil.Api.Controllers
 					defaultInstallation.IsDefault = false;
 			}
 
-			if (!await _repository.AnyInFilial(installation.FilialId))
+			if (!await _repository.Exist(filialId: installation.FilialId))
 			{
 				newInstallation.IsDefault = true;
 			}

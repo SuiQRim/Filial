@@ -59,14 +59,13 @@ public class InstallationsRepository : IInstallationsRepository
 			.DefaultIfEmpty()
 			.MaxAsync();
 	}
-	public async Task<bool> Exist(int filialId, byte order)
+	public async Task<bool> Exist(int? filialId = null, byte? order = null)
 	{
-		return await _context.Installations.AnyAsync(x => x.FilialId == filialId && x.Order == order);
-	}
-
-	public async Task<bool> AnyInFilial(int filialId)
-	{
-		return await _context.Installations.AnyAsync(i => i.FilialId == filialId);
+		return await _context.Installations.
+			AnyAsync(x =>
+				(filialId == null || x.FilialId == filialId) &&
+				(order == null || x.Order == order)
+			);
 	}
 
 	public async Task SaveChangesAsync() => await _context.SaveChangesAsync();

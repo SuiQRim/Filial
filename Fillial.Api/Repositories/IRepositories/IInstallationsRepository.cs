@@ -59,9 +59,7 @@ public interface IInstallationsRepository
 	/// <param name="filialId">Идентификатор филиала</param>
 	/// <param name="order">Порядковый номер</param>
 	/// <returns></returns>
-	Task<bool> Exist(int filialId, byte order);
-
-	Task<bool> AnyInFilial(int filialId);
+	Task<bool> Exist(int? filialId = null, byte? order = null);
 
 	/// <summary>
 	/// Сохраняет изменения

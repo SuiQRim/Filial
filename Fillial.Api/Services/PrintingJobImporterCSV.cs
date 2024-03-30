@@ -11,26 +11,35 @@ namespace PrinterFil.Api.Services
 	{
         public PrintingJobImporterCSV()
         {
-			_configuration = new(CultureInfo.InvariantCulture)
-			{
-				HasHeaderRecord = false,
-				Delimiter = ";",
-				Encoding = Encoding.UTF8
-			};
-		}
-
+            
+        }
         public PrintingJobImporterCSV(CsvConfiguration configuration)
         {
 			_configuration = configuration;
 		}
 
-		private readonly CsvConfiguration _configuration;
+		private readonly CsvConfiguration _configuration = new (CultureInfo.InvariantCulture)
+		{
+			HasHeaderRecord = false,
+			Delimiter = ";",
+			Encoding = Encoding.UTF8
+		};
 
+		/// <summary>
+		/// Парсит csv-файл
+		/// </summary>
+		/// <param name="file">Файл</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException">Выбрасывается при несоблюдении требований к файлу</exception>
 		public IEnumerable<PrintJobDTO> Parse(IFormFile file)
 		{
 			string[] lines;
 			using (var reader = new StreamReader(file.OpenReadStream()))
 			{
+				reader.Peek();
+				if (reader.CurrentEncoding != Encoding.UTF8)
+					throw new InvalidOperationException("The file is not encoded in UTF-8");
+
 				lines = ReadFirstLines(reader, 100);
 			}
 
@@ -43,18 +52,17 @@ namespace PrinterFil.Api.Services
 				{
 					try
 					{
-
 						PrintJobDTO pj = new(
 							csv.GetField<string>(0),
 							csv.GetField<int>(1),
 							csv.GetField<byte>(2),
 							csv.GetField<int>(3)
 						);
-
+						
 						printJobDTOs.Add(pj);
 					}
 					catch (CsvHelperException ex)
-					when (ex is ValidationException || ex is TypeConverterException || ex is CsvHelper.MissingFieldException)
+					when (ex is ValidationException || ex is TypeConverterException)
 					{
 						continue;
 					}

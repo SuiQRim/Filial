@@ -32,42 +32,41 @@ public class PrintJobsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<string>> PostPrintJob(PrintJobDTO printJob)
 	{
-		//Filial? filial = await _repository.GetRunningFilialAsync(printJob.EmployeeId);
-		//if (filial == null)
-		//	return NotFound("В наших филиалах не найден такой сотрудник");
+		Filial? filial = await _repository.GetRunningFilialAsync(printJob.EmployeeId);
+		if (filial == null)
+			return NotFound("В наших филиалах не найден такой сотрудник");
 
-		//Installation? installation;
-		//if (printJob.InstallationOrder == null)
-		//{
-		//	installation = filial.DefaultInstallation;
+		Installation? installation;
+		if (printJob.InstallationOrder == null)
+		{
+			installation = filial.Installations.SingleOrDefault(i => i.IsDefault);
 
-		//	if (installation == null)
-		//		return NotFound($"Сотрудник не может выполнить печать из-за отсутствия инсталляций");
-		//}
-		//else
-		//{
-		//	installation = filial.Installations
-		//		.Where(i => i.Order == printJob.InstallationOrder)
-		//		.FirstOrDefault();
+			if (installation == null)
+				return NotFound($"Сотрудник не может выполнить печать из-за отсутствия инсталляции по умолчанию");
+		}
+		else
+		{
+			installation = filial.Installations
+				.Where(i => i.Order == printJob.InstallationOrder)
+				.FirstOrDefault();
 
-		//	if (installation == null)
-		//		return NotFound($"Инсталляция с предложенным порядковым номером не найдена");
-		//}
+			if (installation == null)
+				return NotFound($"Инсталляция с предложенным порядковым номером не найдена");
+		}
 
-		//PrintJob pj = new()
-		//{
-		//	EmployeeId = printJob.EmployeeId,
-		//	Name = printJob.Name,
-		//	Order = installation.Order,
-		//	LayerCount = printJob.LayerCount,
-		//	IsSuccessful = await ImitateOfPrint()
-		//};
+		PrintJob pj = new()
+		{
+			EmployeeId = printJob.EmployeeId,
+			Name = printJob.Name,
+			Order = installation.Order,
+			LayerCount = printJob.LayerCount,
+			IsSuccessful = await ImitateOfPrint()
+		};
 
-		//await _repository.CreateAsync(pj);
-		//await _repository.SaveChangesAsync();
+		await _repository.CreateAsync(pj);
+		await _repository.SaveChangesAsync();
 
-		//return Ok((bool)pj.IsSuccessful ? "Accepted" : "Rejected");
-		return Ok();
+		return Ok((bool)pj.IsSuccessful ? "Успех" : "Неудача");
 	}
 
 	private static async Task<bool> ImitateOfPrint()
@@ -87,10 +86,8 @@ public class PrintJobsController : ControllerBase
 	/// <param name="uploadedFile">CSV файл с записями</param>
 	/// <returns>Количество выполненных печатей</returns>
 	/// <response code="200">Успешное добавление</response>
-	/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
-	/// <response code="422">Не удалось считать файл</response>
+	/// <response code="422">Файл не соответствует требованиям</response>
 	[ProducesResponseType(typeof(int), 200)]
-	[ProducesResponseType(404)]
 	[ProducesResponseType(422)]
 	[HttpPost("import")]
 	public async Task<ActionResult<int>> ImportPrintJobCSV([Required]IFormFile uploadedFile)
@@ -110,7 +107,7 @@ public class PrintJobsController : ControllerBase
 			Name = j.Name,
 			LayerCount = j.LayerCount,
 			EmployeeId = j.EmployeeId,
-			Order = (byte)j.InstallationOrder!
+			Order = j.InstallationOrder ?? 0
 		});
 
 		await _repository.CreateRangeAsync(jobs);

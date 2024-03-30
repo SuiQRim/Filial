@@ -36,7 +36,7 @@ builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
 builder.Services.AddScoped<IPrintersRepository, PrintersRepository>();
 builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
 
-builder.Services.AddSingleton<IPrintingJobImporter, PrintingJobImporterCSV>();
+builder.Services.AddTransient<IPrintingJobImporter, PrintingJobImporterCSV>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
