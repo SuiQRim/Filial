@@ -29,11 +29,13 @@ public class PrintersRepository : IPrintersRepository
 	public async Task<IEnumerable<Printer>> ReadAsync()
 	{
 		List<Printer> printers = new ();
+
+		string query = "SELECT Id, Name, MacAddress, Type FROM Printers";
 		using (SqlConnection connection = new (_connectionString))
 		{
-			string query = "SELECT * FROM Printers";
 			SqlCommand command = new (query, connection);
 			await connection.OpenAsync(); 
+
 			using (SqlDataReader reader = await command.ExecuteReaderAsync())
 			{
 				while (await reader.ReadAsync())
@@ -59,12 +61,12 @@ public class PrintersRepository : IPrintersRepository
 
 	public async Task<IEnumerable<Printer>> ReadAsync<T>() where T : Printer
 	{
+		string type = Types[typeof(T)];
+		string query = "SELECT Id, Name, MacAddress FROM Printers WHERE Type = @Type";
 		using (SqlConnection connection = new(_connectionString))
 		{
-			string query = "SELECT * FROM Printers WHERE Type = @Type";
-			string type = Types[typeof(T)];
-
 			await connection.OpenAsync();
+
 			using SqlCommand command = new(query, connection);
 			command.Parameters.Add(new SqlParameter("@Type", type));
 

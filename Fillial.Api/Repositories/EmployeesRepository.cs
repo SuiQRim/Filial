@@ -17,10 +17,11 @@ namespace PrinterFil.Api.Repositories
         public async Task<IEnumerable<Employee>> ReadAsync()
 		{
 			List<Employee> employees = new();
+			string query = "SELECT Id, Name, FilialId FROM Employees";
 			using (var connection = new SqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new SqlCommand("SELECT * FROM Employees", connection);
+				var command = new SqlCommand(query, connection);
 
 				using SqlDataReader reader = await command.ExecuteReaderAsync();
 

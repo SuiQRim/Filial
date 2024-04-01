@@ -17,13 +17,14 @@ public class FilialsRepository : IFilialsRepository
 	public async Task<IEnumerable<Filial>> ReadAsync()
 	{
 		List<Filial> filials = new();
+		string query = "SELECT Id, Name, Location FROM Filials";
 		using (var connection = new SqlConnection(_connectionString))
 		{
 			await connection.OpenAsync();
-			SqlCommand command = new ("SELECT * FROM Filials", connection);
+
+			SqlCommand command = new (query, connection);
 
 			using SqlDataReader reader = await command.ExecuteReaderAsync();
-
 			while (await reader.ReadAsync())
 			{
 				filials.Add(new Filial

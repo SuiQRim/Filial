@@ -16,30 +16,35 @@ public class InstallationsRepository : IInstallationsRepository
     public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
 		List<Installation> installations = new();
-		using (SqlConnection connection = new (_connectionString))
+		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
+			"FROM Installations WHERE FilialId = COALESCE(@FilialId, FilialId)";
+		using SqlConnection connection = new(_connectionString);
+		
+		await connection.OpenAsync();
+
+		SqlCommand command = new(query, connection);
+		command.Parameters.Add(new SqlParameter("@FilialId", filialId.HasValue ? filialId : DBNull.Value));
+
+		using (SqlDataReader reader = await command.ExecuteReaderAsync())
 		{
-			await connection.OpenAsync();
-
-			SqlCommand command = new("SELECT * FROM Installations WHERE FilialId = COALESCE(@FilialId, FilialId)", connection);
-			command.Parameters.Add(new SqlParameter("@FilialId", filialId.HasValue ? filialId : DBNull.Value));
-
-			using SqlDataReader reader = await command.ExecuteReaderAsync();
-
 			while (await reader.ReadAsync())
 			{
 				installations.Add(ParseEntity(reader));
 			}
 		}
+		
 
 		return installations;
 	}
 
 	public async Task<Installation?> ReadAsync(int id)
 	{
+		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
+			"FROM Installations WHERE Id = @Id";
 		using SqlConnection connection = new (_connectionString);
 		await connection.OpenAsync();
 
-		SqlCommand command = new("SELECT * FROM Installations WHERE Id = @Id", connection);
+		SqlCommand command = new(query, connection);
 		command.Parameters.Add(new SqlParameter("@Id", id));
 
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -49,10 +54,12 @@ public class InstallationsRepository : IInstallationsRepository
 
 	public async Task<Installation?> ReadDefaultAsync(int filialId)
 	{
+		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
+			"FROM Installations WHERE FilialId = @FilialId AND IsDefault = 1";
 		using SqlConnection connection = new(_connectionString);
 		await connection.OpenAsync();
 
-		SqlCommand command = new("SELECT * FROM Installations WHERE FilialId = @FilialId AND IsDefault = 1", connection);
+		SqlCommand command = new(query, connection);
 		command.Parameters.Add(new SqlParameter("@FilialId", filialId));
 
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -62,10 +69,12 @@ public class InstallationsRepository : IInstallationsRepository
 
 	public async Task<Installation?> ReadFirstAsync(int filialId)
 	{
+		string query = "SELECT TOP 1 Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
+			"FROM Installations WHERE FilialId = @FilialId";
 		using SqlConnection connection = new(_connectionString);
 		await connection.OpenAsync();
-
-		SqlCommand command = new("SELECT TOP 1 * FROM Installations WHERE FilialId = @FilialId", connection);
+		
+		SqlCommand command = new(query, connection);
 		command.Parameters.Add(new SqlParameter("@FilialId", filialId));
 
 		using SqlDataReader reader = await command.ExecuteReaderAsync();

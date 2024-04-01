@@ -1,6 +1,5 @@
 ﻿using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Repositories.IRepositories;
-using System.Data.Common;
 
 namespace PrinterFil.Api.Repositories;
 
