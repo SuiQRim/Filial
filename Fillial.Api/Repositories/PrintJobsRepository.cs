@@ -1,46 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PrinterFil.Api.DataBase;
+﻿using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Repositories.IRepositories;
+using System.Data.Common;
 
 namespace PrinterFil.Api.Repositories;
 
 public class PrintJobsRepository : IPrintJobsRepository
 {
-	private readonly FilialServerContext _context;
-
-    public PrintJobsRepository(FilialServerContext context)
-    {
-		_context = context;
+	public Task CreateAsync(PrintJob printJob)
+	{
+		throw new NotImplementedException();
 	}
 
-	/// <inheritdoc/>
-    public async Task CreateAsync(PrintJob printJob)
+	public Task CreateRangeAsync(IEnumerable<PrintJob> printJobs)
 	{
-		await _context.PrintJobs.AddAsync(printJob);
+		throw new NotImplementedException();
 	}
 
-	/// <inheritdoc/>
-	public async Task CreateRangeAsync(IEnumerable<PrintJob> printJobs)
+	public Task<Filial?> GetRunningFilialAsync(int filialId)
 	{
-		await _context.PrintJobs.AddRangeAsync(printJobs);
+		throw new NotImplementedException();
 	}
 
-	/// <inheritdoc/>
-	public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
-
-	/// <inheritdoc/>
-	public async Task<Filial?> GetRunningFilialAsync(int employeeId)
+	public Task SaveChangesAsync()
 	{
-		Filial? filial = await _context
-			.Filials
-			.Include(f => f.Employees)
-			.Where(f => f
-				.Employees
-				.Any(e => e.Id == employeeId))
-			.Include(f => f.Installations)
-			.SingleOrDefaultAsync();
-
-		return filial;
+		throw new NotImplementedException();
 	}
 }
 

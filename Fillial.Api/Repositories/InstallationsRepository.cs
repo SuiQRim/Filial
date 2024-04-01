@@ -1,72 +1,113 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Repositories.IRepositories;
+using System.Data.Common;
 
 namespace PrinterFil.Api.Repositories;
 
 public class InstallationsRepository : IInstallationsRepository
 {
-	private readonly FilialServerContext _context;
-
-	public InstallationsRepository(FilialServerContext context)
-	{
-		_context = context;
+	private readonly string _connectionString;
+	public InstallationsRepository(string connection)
+    {
+		_connectionString = connection;
 	}
 
-	public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
+    public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
-		return await _context
-			.Installations
-			.Where(i => filialId == null || i.FilialId == filialId)
-			.ToArrayAsync();
+		List<Installation> installations = new();
+		using (SqlConnection connection = new (_connectionString))
+		{
+			await connection.OpenAsync();
+
+			SqlCommand command = new("SELECT * FROM Installations WHERE FilialId = COALESCE(@FilialId, FilialId)", connection);
+			command.Parameters.Add(new SqlParameter("@FilialId", filialId.HasValue ? filialId : DBNull.Value));
+
+			using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				installations.Add(ParseEntity(reader));
+			}
+		}
+
+		return installations;
 	}
+
 	public async Task<Installation?> ReadAsync(int id)
 	{
-		return await _context
-			.Installations
-			.SingleOrDefaultAsync(x => x.Id == id);
+		using SqlConnection connection = new (_connectionString);
+		await connection.OpenAsync();
+
+		SqlCommand command = new("SELECT * FROM Installations WHERE Id = @Id", connection);
+		command.Parameters.Add(new SqlParameter("@Id", id));
+
+		using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+		return await reader.ReadAsync() ? ParseEntity(reader) : null;
 	}
 
 	public async Task<Installation?> ReadDefaultAsync(int filialId)
 	{
-		return await _context.Installations.SingleOrDefaultAsync(i => i.FilialId == filialId && i.IsDefault);
+		using SqlConnection connection = new(_connectionString);
+		await connection.OpenAsync();
+
+		SqlCommand command = new("SELECT * FROM Installations WHERE FilialId = @FilialId AND IsDefault = 1", connection);
+		command.Parameters.Add(new SqlParameter("@FilialId", filialId));
+
+		using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+		return await reader.ReadAsync() ? ParseEntity(reader) : null;
 	}
 
 	public async Task<Installation?> ReadFirstAsync(int filialId)
 	{
-		return await _context.Installations.Where(i => i.FilialId == filialId).FirstOrDefaultAsync();
+		using SqlConnection connection = new(_connectionString);
+		await connection.OpenAsync();
+
+		SqlCommand command = new("SELECT TOP 1 * FROM Installations WHERE FilialId = @FilialId", connection);
+		command.Parameters.Add(new SqlParameter("@FilialId", filialId));
+
+		using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+		return await reader.ReadAsync() ? ParseEntity(reader) : null;
 	}
 
-	public async Task CreateAsync(Installation installation)
+	public Task CreateAsync(Installation installation)
 	{
-		await _context.Installations.AddAsync(installation);
+		throw new NotImplementedException();
 	}
 
-	public async Task DeleteAsync(int id)
+	public Task DeleteAsync(int id)
 	{
-		Installation? installation = await _context.Installations.SingleOrDefaultAsync(i => i.Id == id);
-		if (installation != null)
+		throw new NotImplementedException();
+	}
+
+	public Task<bool> Exist(int? filialId = null, byte? order = null)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task<byte> GetOrderAsync(int filialId)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task SaveChangesAsync()
+	{
+		throw new NotImplementedException();
+	}
+
+	private static Installation ParseEntity(DbDataReader reader)
+	{
+		return new Installation
 		{
-			_context.Installations.Remove(installation);
-		}	
+			Id = (int)reader["Id"],
+			Name = (string)reader["Name"],
+			DeviceId = (int)reader["DeviceId"],
+			FilialId = (int)reader["FilialId"],
+			IsDefault = (bool)reader["IsDefault"],
+			Order = (byte)reader["Order"]
+		};
 	}
-
-	public async Task<byte> GetOrderAsync(int filialId)
-	{
-		return await _context.Installations
-			.Where(i => i.FilialId == filialId)
-			.Select(p => p.Order)
-			.DefaultIfEmpty()
-			.MaxAsync();
-	}
-	public async Task<bool> Exist(int? filialId = null, byte? order = null)
-	{
-		return await _context.Installations.
-			AnyAsync(x =>
-				(filialId == null || x.FilialId == filialId) &&
-				(order == null || x.Order == order)
-			);
-	}
-
-	public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
 }

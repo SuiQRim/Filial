@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Middlewares;
 using PrinterFil.Api.Repositories;
 using PrinterFil.Api.Repositories.IRepositories;
@@ -27,13 +25,13 @@ builder.Services.AddSwaggerGen(options =>
 	});
 });
 builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
-builder.Services.AddDbContext<FilialServerContext>(options =>
-	   options.UseSqlServer(builder.Configuration.GetConnectionString("PrinterFilServer")));
 
-builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>();
-builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
-builder.Services.AddScoped<IFilialsRepository, FilialsRepository>();
-builder.Services.AddScoped<IPrintersRepository, PrintersRepository>();
+string? connection = builder.Configuration.GetConnectionString("PrinterFilServer") ?? throw new ArgumentNullException("Connection is Null");
+
+builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>(provider => new (connection));
+builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>(provider => new (connection));
+builder.Services.AddScoped<IFilialsRepository, FilialsRepository>(provider => new (connection));
+builder.Services.AddScoped<IPrintersRepository, PrintersRepository>(provider => new(connection));
 builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
 
 builder.Services.AddTransient<IPrintingJobImporter, PrintingJobImporterCSV>();

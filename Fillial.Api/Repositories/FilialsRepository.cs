@@ -1,25 +1,41 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
 using PrinterFil.Api.DataBase;
-using PrinterFil.Api.Models;
 using PrinterFil.Api.Repositories.IRepositories;
 
 namespace PrinterFil.Api.Repositories;
 
 public class FilialsRepository : IFilialsRepository
 {
-	private readonly FilialServerContext _context;
+	private readonly string _connectionString;
 
-	public FilialsRepository(FilialServerContext context)
+	public FilialsRepository(string connectionString)
 	{
-		_context = context;
+		_connectionString = connectionString;
 	}
 
 	/// <inheritdoc/>
 	public async Task<IEnumerable<Filial>> ReadAsync()
 	{
-		return await _context
-			.Filials
-			.ToListAsync();
+		List<Filial> filials = new();
+		using (var connection = new SqlConnection(_connectionString))
+		{
+			await connection.OpenAsync();
+			SqlCommand command = new ("SELECT * FROM Filials", connection);
+
+			using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				filials.Add(new Filial
+				{
+					Id = (int)reader["Id"],
+					Name = (string)reader["Name"],
+					Location = reader.IsDBNull(reader.GetOrdinal("Location")) ? null : (string)reader["Location"]
+				});
+			}
+		}
+
+		return filials;
 	}
 }
 
