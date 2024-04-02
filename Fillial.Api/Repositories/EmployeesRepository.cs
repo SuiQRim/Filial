@@ -9,22 +9,21 @@ namespace PrinterFil.Api.Repositories
 		private readonly string _connectionString;
 
 		public EmployeesRepository(string connectionString)
-        {
+		{
 			_connectionString = connectionString;
-        }
+		}
 
 
-        public async Task<IEnumerable<Employee>> ReadAsync()
+		public async Task<IEnumerable<Employee>> ReadAsync()
 		{
 			List<Employee> employees = new();
 			string query = "SELECT Id, Name, FilialId FROM Employees";
-			using (var connection = new SqlConnection(_connectionString))
-			{
+
+			using var connection = new SqlConnection(_connectionString);
+			using (SqlCommand command = new(query, connection)) {
+
 				await connection.OpenAsync();
-				var command = new SqlCommand(query, connection);
-
 				using SqlDataReader reader = await command.ExecuteReaderAsync();
-
 				while (await reader.ReadAsync())
 				{
 					employees.Add(new Employee
@@ -35,8 +34,8 @@ namespace PrinterFil.Api.Repositories
 					});
 				}
 			}
-
 			return employees;
+
 		}
 	}
 }

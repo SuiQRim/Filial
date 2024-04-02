@@ -11,10 +11,15 @@ namespace PrinterFil.Api.Controllers
 	public class InstallationsControllers : ControllerBase
 	{
 		private readonly IInstallationsRepository _repository;
+		private readonly IFilialsRepository _filialsRepository;
+		private readonly IPrintersRepository _printersRepository;
 
-		public InstallationsControllers(IInstallationsRepository repository)
+		public InstallationsControllers(IInstallationsRepository repository,
+			IFilialsRepository filialsRepository, IPrintersRepository printersRepository)
 		{
 			_repository = repository;
+			_filialsRepository = filialsRepository; 
+			_printersRepository = printersRepository;
 		}
 
 		/// <summary>
@@ -23,9 +28,7 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="filialId">Идентификатор филиала, к которому привязаны инсталляции</param>
 		/// <returns>Список инсталляций</returns>
 		/// <response code="200">Успешное предоставление</response>
-		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
 		[ProducesResponseType(typeof(IEnumerable<InstallationResponseDTO>), 200)]
-		[ProducesResponseType(404)]
 		[HttpGet("collection")]
 		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int? filialId)
 		{
@@ -66,75 +69,82 @@ namespace PrinterFil.Api.Controllers
 		/// Добавляет новую инсталляцию
 		/// </summary>
 		/// <param name="installation">Инсталляция</param>
+		/// <response code="201">Добавлено</response>
+		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
+		/// <response code="401">Некорректные данные</response>
 		/// <returns>Идентификатор</returns>
-		/// <response code="201">Успешное добавление</response>
-		/// <response code="400">Плохой запрос</response>
 		[ProducesResponseType(typeof(int), 201)]
-		[ProducesResponseType(400)]
+		[ProducesResponseType(404)]
+		[ProducesResponseType(401)]
 		[HttpPost]
 		public async Task<ActionResult<int>> Add(InstallationDTO installation)
 		{
-			byte? maxOrder = await GetOrderAsync(installation.FilialId, installation.Order);
+			if (!await _filialsRepository.ExistAsync(installation.FilialId))
+				return NotFound("Филиал не существует");
+			
+			if (!await _printersRepository.ExistAsync(installation.PrintingDeviceId))
+				return NotFound("Печатное устройство не существует");
 
-			if (maxOrder == null)
-				return BadRequest();
-			        
+			byte? order;
+			if (installation.Order == null)
+			{
+				order = await _repository.GetOrderAsync(installation.FilialId);
+				if (order == null)
+					return BadRequest("Нет свободного порядкового номера");
+			}
+			else
+			{
+				if (await _repository.Exist(installation.FilialId, (byte)installation.Order))
+					return BadRequest("Порядковый номер занят");
+				order = installation.Order;
+			}
+
+			bool isDefault = installation.IsDefault;
+			if (isDefault)
+			{
+				Installation? defaultInstallation = await _repository.ReadDefaultAsync(installation.FilialId);
+				if (defaultInstallation != null)
+				{
+					defaultInstallation.IsDefault = false;
+					await _repository.UpdateAsync(defaultInstallation.Id, defaultInstallation);
+				}
+					
+			}
+			else if (!await _repository.Exist(filialId: installation.FilialId))
+			{
+				isDefault = true;
+			}
+
 			Installation newInstallation = new()
 			{
 				FilialId = installation.FilialId,
 				Name = installation.Name,
 				DeviceId = installation.PrintingDeviceId,
-				IsDefault = installation.IsDefault,
-				Order = (byte)maxOrder
+				IsDefault = isDefault,
+				Order = (byte)order
 			};
 
-			if (newInstallation.IsDefault)
-			{
-				Installation? defaultInstallation = await _repository.ReadDefaultAsync(installation.FilialId);
-				if (defaultInstallation != null)
-					defaultInstallation.IsDefault = false;
-			}
+			int? id = await _repository.CreateAsync(newInstallation);
 
-			if (!await _repository.Exist(filialId: installation.FilialId))
-			{
-				newInstallation.IsDefault = true;
-			}
+			if (id == null)
+				return BadRequest();
 
-			await _repository.CreateAsync(newInstallation);
-			await _repository.SaveChangesAsync();
-
-			return CreatedAtAction(nameof(Add), newInstallation.Id);
+			return CreatedAtAction(nameof(Add), id);
 		}
-
-		private async Task<byte?> GetOrderAsync(int filialId, byte? order)
-		{
-			if (order == null)
-			{
-				return (byte)(await _repository.GetOrderAsync(filialId) + 1);
-			}
-			else if (!await _repository.Exist(filialId, (byte)order))
-			{
-				return (byte)order;
-			}
-			return null;
-		}
-
 
 		/// <summary>
 		/// Удаляет инсталляцию
 		/// </summary>
 		/// <param name="id">Идентификатор</param>
 		/// <returns></returns>
-		/// <response code="200">Успешное удаление</response>
-		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
+		/// <response code="200">Удален</response>
 		[ProducesResponseType(200)]
-		[ProducesResponseType(404)]
 		[HttpDelete]
 		public async Task<IActionResult> Delete(int id) 
 		{ 
 			Installation? installation = await _repository.ReadAsync(id);
 			if (installation == null)
-				return NotFound();
+				return Ok();
 
 			await _repository.DeleteAsync(id);
 
@@ -145,10 +155,9 @@ namespace PrinterFil.Api.Controllers
 				if (newDefaultInstallation != null)
 				{
 					newDefaultInstallation.IsDefault = true;
+					await _repository.UpdateAsync(newDefaultInstallation.Id, newDefaultInstallation);
 				}
 			}
-
-			await _repository.SaveChangesAsync();
 
 			return Ok();
 		}

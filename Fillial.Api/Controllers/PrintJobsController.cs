@@ -64,7 +64,6 @@ public class PrintJobsController : ControllerBase
 		};
 
 		await _repository.CreateAsync(pj);
-		await _repository.SaveChangesAsync();
 
 		return Ok((bool)pj.IsSuccessful ? "Успех" : "Неудача");
 	}
@@ -111,7 +110,6 @@ public class PrintJobsController : ControllerBase
 		});
 
 		await _repository.CreateRangeAsync(jobs);
-		await _repository.SaveChangesAsync();
 
 		return Ok(jobs.Count());
 	}

@@ -87,5 +87,21 @@ public class PrintersRepository : IPrintersRepository
 		}
 
 	}
+
+	public async Task<bool> ExistAsync(int id)
+	{
+		string query = "IF EXISTS " +
+			"(SELECT 1 FROM Printers WHERE Id = @Id) " +
+			"SELECT 1 ELSE SELECT 0";
+		using SqlConnection connection = new(_connectionString);
+		using (SqlCommand command = new(query, connection))
+		{
+			command.Parameters.AddWithValue("@Id", id);
+
+			await connection.OpenAsync();
+			object? result = await command.ExecuteScalarAsync();
+			return result != null && (int)result > 0;
+		}
+	}
 }
 
