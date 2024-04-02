@@ -12,12 +12,17 @@ namespace PrinterFil.Api.Controllers;
 public class PrintJobsController : ControllerBase
 {
     private readonly IPrintJobsRepository _repository;
+	private readonly IFilialsRepository _filialsRepository;
 	private readonly IPrintingJobImporter _printingJobImporter;
+	private readonly IInstallationsRepository _installationsRepository;
 
-	public PrintJobsController(IPrintJobsRepository repository, IPrintingJobImporter printingJobImporter)
+	public PrintJobsController(IPrintJobsRepository repository, IPrintingJobImporter printingJobImporter,
+		IFilialsRepository filialsRepository, IInstallationsRepository installationsRepository)
     {
 		_repository = repository;
 		_printingJobImporter = printingJobImporter;
+		_filialsRepository = filialsRepository;
+		_installationsRepository = installationsRepository;
 	}
 
 	/// <summary>
@@ -32,24 +37,20 @@ public class PrintJobsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<string>> PostPrintJob(PrintJobDTO printJob)
 	{
-		Filial? filial = await _repository.GetRunningFilialAsync(printJob.EmployeeId);
+		Filial? filial = await _filialsRepository.ReadByEmployeeIdAsync(printJob.EmployeeId);
 		if (filial == null)
 			return NotFound("В наших филиалах не найден такой сотрудник");
 
 		Installation? installation;
 		if (printJob.InstallationOrder == null)
 		{
-			installation = filial.Installations.SingleOrDefault(i => i.IsDefault);
-
+			installation = await _installationsRepository.ReadDefaultAsync(filial.Id);
 			if (installation == null)
 				return NotFound($"Сотрудник не может выполнить печать из-за отсутствия инсталляции по умолчанию");
 		}
 		else
 		{
-			installation = filial.Installations
-				.Where(i => i.Order == printJob.InstallationOrder)
-				.FirstOrDefault();
-
+			installation = await _installationsRepository.ReadByOrderAsync(filial.Id, (byte)printJob.InstallationOrder);
 			if (installation == null)
 				return NotFound($"Инсталляция с предложенным порядковым номером не найдена");
 		}

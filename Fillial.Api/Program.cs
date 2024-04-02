@@ -4,15 +4,10 @@ using PrinterFil.Api.Repositories;
 using PrinterFil.Api.Repositories.IRepositories;
 using PrinterFil.Api.Services;
 using System.Reflection;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-	options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-	options.JsonSerializerOptions.WriteIndented = true;
-});
+builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -26,13 +21,13 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 
-string? connection = builder.Configuration.GetConnectionString("PrinterFilServer") ?? throw new ArgumentNullException("Connection is Null");
-
-builder.Services.AddScoped<IEmployeesRepository, EmployeesRepository>(provider => new (connection));
-builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>(provider => new (connection));
-builder.Services.AddScoped<IFilialsRepository, FilialsRepository>(provider => new (connection));
-builder.Services.AddScoped<IPrintersRepository, PrintersRepository>(provider => new(connection));
-builder.Services.AddScoped<IPrintJobsRepository, PrintJobsRepository>();
+string? connection = builder.Configuration.GetConnectionString("PrinterFilServer") 
+	?? throw new ArgumentNullException(nameof(connection));
+builder.Services.AddTransient<IEmployeesRepository, EmployeesRepository>(provider => new (connection));
+builder.Services.AddTransient<IInstallationsRepository, InstallationsRepository>(provider => new (connection));
+builder.Services.AddTransient<IFilialsRepository, FilialsRepository>(provider => new (connection));
+builder.Services.AddTransient<IPrintersRepository, PrintersRepository>(provider => new(connection));
+builder.Services.AddTransient<IPrintJobsRepository, PrintJobsRepository>(provider => new(connection));
 
 builder.Services.AddTransient<IPrintingJobImporter, PrintingJobImporterCSV>();
 

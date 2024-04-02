@@ -12,6 +12,8 @@ public interface IInstallationsRepository
 
 	Task<Installation?> ReadFirstAsync(int filialId);
 
+	Task<Installation?> ReadByOrderAsync(int filialId, byte order);
+
 	Task<int?> CreateAsync(Installation installation);
 
 	Task DeleteAsync(int id);
@@ -20,5 +22,6 @@ public interface IInstallationsRepository
 
 	Task<byte?> GetOrderAsync(int filialId);
 
+	//TODO: Возможно разделить на два метода
 	Task<bool> Exist(int? filialId = null, byte? order = null);
 }

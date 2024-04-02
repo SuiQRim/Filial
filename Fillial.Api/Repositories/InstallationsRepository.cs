@@ -66,6 +66,23 @@ public class InstallationsRepository : IInstallationsRepository
 		return await reader.ReadAsync() ? ParseEntity(reader) : null;
 	}
 
+
+	public async Task<Installation?> ReadByOrderAsync(int filialId, byte order)
+	{
+		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
+				"FROM Installations WHERE FilialId = @FilialId AND [Order] = @Order";
+		using SqlConnection connection = new(_connectionString);
+
+		SqlCommand command = new(query, connection);
+		command.Parameters.AddWithValue("@FilialId", filialId);
+		command.Parameters.AddWithValue("@Order", order);
+
+		await connection.OpenAsync();
+		using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+		return await reader.ReadAsync() ? ParseEntity(reader) : null;
+	}
+
 	public async Task<Installation?> ReadFirstAsync(int filialId)
 	{
 		string query = "SELECT TOP 1 Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
@@ -73,7 +90,7 @@ public class InstallationsRepository : IInstallationsRepository
 		using SqlConnection connection = new(_connectionString);
 		
 		SqlCommand command = new(query, connection);
-		command.Parameters.Add(new SqlParameter("@FilialId", filialId));
+		command.Parameters.AddWithValue("@FilialId", filialId);
 
 		await connection.OpenAsync();
 		using SqlDataReader reader = await command.ExecuteReaderAsync();

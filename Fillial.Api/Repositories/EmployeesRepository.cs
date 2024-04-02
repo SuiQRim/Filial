@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using PrinterFil.Api.DataBase;
 using PrinterFil.Api.Repositories.IRepositories;
+using System.Data.Common;
 
 namespace PrinterFil.Api.Repositories
 {
@@ -17,8 +18,8 @@ namespace PrinterFil.Api.Repositories
 		public async Task<IEnumerable<Employee>> ReadAsync()
 		{
 			List<Employee> employees = new();
-			string query = "SELECT Id, Name, FilialId FROM Employees";
 
+			string query = "SELECT Id, Name, FilialId FROM Employees";
 			using var connection = new SqlConnection(_connectionString);
 			using (SqlCommand command = new(query, connection)) {
 
@@ -35,7 +36,6 @@ namespace PrinterFil.Api.Repositories
 				}
 			}
 			return employees;
-
 		}
 	}
 }

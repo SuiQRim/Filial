@@ -13,7 +13,7 @@ public class PrintersRepository : IPrintersRepository
 		_connectionString = connection;
 	}
 
-	// Пока думаю что с этим сделать)
+	// TODO: Проработать это
 	private static readonly Dictionary<Type, PrinterCreator> Creators = new()
 	{
 		{typeof(Printer), new LocalPrinterCreator() },

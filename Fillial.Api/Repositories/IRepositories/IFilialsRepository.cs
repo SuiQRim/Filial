@@ -6,6 +6,8 @@ public interface IFilialsRepository
 {
 	Task<IEnumerable<Filial>> ReadAsync();
 
+	Task<Filial?> ReadByEmployeeIdAsync(int employeeId);
+
 	Task<bool> ExistAsync(int id);
 
 }
