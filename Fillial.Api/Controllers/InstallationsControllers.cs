@@ -76,32 +76,16 @@ namespace PrinterFil.Api.Controllers
 			if (!await _printersRepository.ExistAsync(installation.PrintingDeviceId))
 				return NotFound("Печатное устройство не существует");
 
-			byte? order;
-			if (installation.Order == null)
-			{
-				order = await _repository.GetOrderAsync(installation.FilialId);
-				if (order == null)
-					return BadRequest("Нет свободного порядкового номера");
-			}
-			else
-			{
-				if (await _repository.Exist(installation.FilialId, (byte)installation.Order))
-					return BadRequest("Порядковый номер занят");
-				order = installation.Order;
-			}
+			byte? order = await CalculateOrder(installation.Order, installation.FilialId);
+			if (order == null)
+				return BadRequest("Невозможно сгенерировать или использовать предложенный порядковый номер");
 
 			bool isDefault = installation.IsDefault;
 			if (isDefault)
 			{
-				Installation? defaultInstallation = await _repository.ReadDefaultAsync(installation.FilialId);
-				if (defaultInstallation != null)
-				{
-					defaultInstallation.IsDefault = false;
-					await _repository.UpdateAsync(defaultInstallation.Id, defaultInstallation);
-				}
-					
+				await ResetDefault(installation.FilialId);
 			}
-			else if (!await _repository.Exist(filialId: installation.FilialId))
+			else if (!await _repository.DefaultExistAsync(installation.FilialId))
 			{
 				isDefault = true;
 			}
@@ -123,6 +107,29 @@ namespace PrinterFil.Api.Controllers
 			return CreatedAtAction(nameof(Add), id);
 		}
 
+		private async Task<byte?> CalculateOrder(byte? order, int filialId)
+		{
+			if (order == null)
+			{
+				order = await _repository.GetOrderAsync(filialId);
+			}
+			else
+			{
+				order = await _repository.ExistByOrderAsync(filialId, (byte)order) ? null : order;
+			}
+			return order;
+		}
+
+		private async Task ResetDefault(int filialId)
+		{
+			Installation? defaultInstallation = await _repository.ReadDefaultAsync(filialId);
+			if (defaultInstallation != null)
+			{
+				defaultInstallation.IsDefault = false;
+				await _repository.UpdateAsync(defaultInstallation.Id, defaultInstallation);
+			}
+		}
+
 		/// <summary>
 		/// Удаляет инсталляцию
 		/// </summary>
@@ -141,16 +148,22 @@ namespace PrinterFil.Api.Controllers
 
 			if (installation.IsDefault)
 			{
-				Installation? newDefaultInstallation = await _repository.ReadFirstAsync(installation.FilialId);
-
-				if (newDefaultInstallation != null)
-				{
-					newDefaultInstallation.IsDefault = true;
-					await _repository.UpdateAsync(newDefaultInstallation.Id, newDefaultInstallation);
-				}
+				await UpdateDefaultAsync(installation.FilialId);
 			}
 
 			return Ok();
 		}
+
+		private async Task UpdateDefaultAsync(int filialId)
+		{
+			Installation? newDefaultInstallation = await _repository.ReadFirstAsync(filialId);
+
+			if (newDefaultInstallation != null)
+			{
+				newDefaultInstallation.IsDefault = true;
+				await _repository.UpdateAsync(newDefaultInstallation.Id, newDefaultInstallation);
+			}
+		}
+
 	}
 }

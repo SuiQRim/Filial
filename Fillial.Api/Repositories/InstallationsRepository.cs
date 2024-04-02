@@ -15,7 +15,7 @@ public class InstallationsRepository : IInstallationsRepository
 
     public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
-		List<Installation> installations = new();
+		List<Installation> installations = [];
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
 			"FROM Installations WHERE FilialId = COALESCE(@FilialId, FilialId)";
 
@@ -28,7 +28,7 @@ public class InstallationsRepository : IInstallationsRepository
 			using SqlDataReader reader = await command.ExecuteReaderAsync();
 			while (await reader.ReadAsync())
 			{
-				installations.Add(ParseEntity(reader));
+				installations.Add(ReadEntity(reader));
 			}
 		}
 
@@ -47,7 +47,7 @@ public class InstallationsRepository : IInstallationsRepository
 			await connection.OpenAsync();
 			using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-			return await reader.ReadAsync() ? ParseEntity(reader) : null;
+			return await reader.ReadAsync() ? ReadEntity(reader) : null;
 		}
 	}
 
@@ -63,7 +63,7 @@ public class InstallationsRepository : IInstallationsRepository
 		await connection.OpenAsync();
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-		return await reader.ReadAsync() ? ParseEntity(reader) : null;
+		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
 
@@ -80,7 +80,7 @@ public class InstallationsRepository : IInstallationsRepository
 		await connection.OpenAsync();
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-		return await reader.ReadAsync() ? ParseEntity(reader) : null;
+		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
 	public async Task<Installation?> ReadFirstAsync(int filialId)
@@ -95,7 +95,7 @@ public class InstallationsRepository : IInstallationsRepository
 		await connection.OpenAsync();
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-		return await reader.ReadAsync() ? ParseEntity(reader) : null;
+		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
 	public async Task<int?> CreateAsync(Installation installation)
@@ -105,14 +105,26 @@ public class InstallationsRepository : IInstallationsRepository
 		using (SqlConnection connection = new (_connectionString))
 		using (SqlCommand command = new (query, connection))
 		{
-			command.Parameters.AddWithValue("@Name", installation.Name);
-			command.Parameters.AddWithValue("@FilialId", installation.FilialId);
-			command.Parameters.AddWithValue("@DeviceId", installation.DeviceId);
-			command.Parameters.AddWithValue("@IsDefault", installation.IsDefault);
-			command.Parameters.AddWithValue("@Order", installation.Order);
+			AddToParams(installation, command);
 
 			await connection.OpenAsync();
 			return (int?)await command.ExecuteScalarAsync();
+		}
+	}
+
+	public async Task UpdateAsync(int id, Installation installation)
+	{
+		string query = "UPDATE Installations SET " +
+			"Name = @Name, FilialId = @FilialId, DeviceId = @DeviceId, IsDefault = @IsDefault, [Order] = @Order " +
+			"WHERE Id = @Id";
+		using SqlConnection connection = new(_connectionString);
+		using (SqlCommand command = new(query, connection))
+		{
+			command.Parameters.AddWithValue("@Id", id);
+			AddToParams(installation, command);
+
+			await connection.OpenAsync();
+			await command.ExecuteNonQueryAsync();
 		}
 	}
 
@@ -129,27 +141,10 @@ public class InstallationsRepository : IInstallationsRepository
 		}
 	}
 
-	public async Task<bool> Exist(int? filialId = null, byte? order = null)
-	{
-		string query = "IF EXISTS " +
-			"(SELECT 1 FROM Installations WHERE FilialId = @FilialId AND [Order] = COALESCE(@Order, [Order])) " +
-			"SELECT 1 ELSE SELECT 0";
-		using SqlConnection connection = new (_connectionString);
-		using (SqlCommand command = new (query, connection))
-		{
-			command.Parameters.AddWithValue("@FilialId", 3);
-			command.Parameters.AddWithValue("@Order", order.HasValue ? filialId : DBNull.Value);
-
-			await connection.OpenAsync();
-			object? result = await command.ExecuteScalarAsync();
-			return result != null && (int)result > 0;
-		}
-	}
-
 	public async Task<byte?> GetOrderAsync(int filialId)
 	{
 		// Запрос вернет минимальное не использованное число от 1 до 255
-		const int maxValue = byte.MaxValue;
+		const byte maxValue = byte.MaxValue;
 		string query = "SELECT MIN([Order]) + 1 FROM Installations " +
 			"WHERE [Order] < @MaxValue AND [Order] + 1 NOT IN (" +
 			"SELECT [Order] FROM Installations WHERE FilialId = @FilialId)";
@@ -166,27 +161,37 @@ public class InstallationsRepository : IInstallationsRepository
 		
 	}
 
-	public async Task UpdateAsync(int id, Installation installation)
+	public async Task<bool> DefaultExistAsync(int filialId)
 	{
-		string query = "UPDATE Installations SET " +
-			"Name = @Name, FilialId = @FilialId, DeviceId = @DeviceId, IsDefault = @IsDefault, [Order] = @Order " +
-			"WHERE Id = @Id";
+		return await ExistAsync("FilialId = @FilialId AND IsDefault = 1", [
+			new("@FilialId", filialId)
+		]);
+	}
+
+	public async Task<bool> ExistByOrderAsync(int filialId, byte order)
+	{
+		return await ExistAsync("FilialId = @FilialId AND [Order] = @Order", [
+			new ("@FilialId", filialId),
+			new ("@Order", order)
+		]);
+	}
+
+	private async Task<bool> ExistAsync(string condition, SqlParameter[] parameters)
+	{
+		string query = "IF EXISTS " +
+					   $"(SELECT 1 FROM Installations WHERE {condition})" +
+					   "SELECT 1 ELSE SELECT 0";
 		using SqlConnection connection = new(_connectionString);
 		using (SqlCommand command = new(query, connection))
 		{
-			command.Parameters.AddWithValue("@Id", id);
-			command.Parameters.AddWithValue("@Name", installation.Name);
-			command.Parameters.AddWithValue("@FilialId", installation.FilialId);
-			command.Parameters.AddWithValue("@DeviceId", installation.DeviceId);
-			command.Parameters.AddWithValue("@IsDefault", installation.IsDefault);
-			command.Parameters.AddWithValue("@Order", installation.Order);
-
+			command.Parameters.AddRange(parameters);
 			await connection.OpenAsync();
-			await command.ExecuteNonQueryAsync();
+			object? result = await command.ExecuteScalarAsync();
+			return result != null && (int)result > 0;
 		}
 	}
 
-	private static Installation ParseEntity(DbDataReader reader)
+	private static Installation ReadEntity(DbDataReader reader)
 	{
 		return new Installation
 		{
@@ -197,5 +202,14 @@ public class InstallationsRepository : IInstallationsRepository
 			IsDefault = (bool)reader["IsDefault"],
 			Order = (byte)reader["Order"]
 		};
+	}
+
+	private static void AddToParams(Installation installation, SqlCommand command)
+	{
+		command.Parameters.AddWithValue("@Name", installation.Name);
+		command.Parameters.AddWithValue("@FilialId", installation.FilialId);
+		command.Parameters.AddWithValue("@DeviceId", installation.DeviceId);
+		command.Parameters.AddWithValue("@IsDefault", installation.IsDefault);
+		command.Parameters.AddWithValue("@Order", installation.Order);
 	}
 }

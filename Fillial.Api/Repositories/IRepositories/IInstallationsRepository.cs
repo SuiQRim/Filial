@@ -22,6 +22,8 @@ public interface IInstallationsRepository
 
 	Task<byte?> GetOrderAsync(int filialId);
 
-	//TODO: Возможно разделить на два метода
-	Task<bool> Exist(int? filialId = null, byte? order = null);
+	Task<bool> DefaultExistAsync(int filialId);
+
+	Task<bool> ExistByOrderAsync(int filialId, byte order);
+
 }
