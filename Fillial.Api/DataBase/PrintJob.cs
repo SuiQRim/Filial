@@ -17,6 +17,4 @@ public partial class PrintJob
     public int LayerCount { get; set; }
 
     public bool? IsSuccessful { get; set; }
-
-    public virtual Employee Employee { get; set; } = null!;
 }

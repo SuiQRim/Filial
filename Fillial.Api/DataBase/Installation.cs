@@ -12,12 +12,10 @@ public partial class Installation
 
 	public int FilialId { get; set; }
 
-	[Range(1,byte.MaxValue)]
-    public byte Order { get; set; }
+	public int DeviceId { get; set; }
 
     public bool IsDefault { get; set; }
 
-	public int DeviceId { get; set; }
-
-	public virtual Printer Device { get; set; } = null!;
+	[Range(1, byte.MaxValue)]
+	public byte Order { get; set; }
 }

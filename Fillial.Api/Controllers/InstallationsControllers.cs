@@ -28,17 +28,11 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="filialId">Идентификатор филиала, к которому привязаны инсталляции</param>
 		/// <returns>Список инсталляций</returns>
 		/// <response code="200">Успешное предоставление</response>
-		[ProducesResponseType(typeof(IEnumerable<InstallationResponseDTO>), 200)]
+		[ProducesResponseType(typeof(IEnumerable<Installation>), 200)]
 		[HttpGet("collection")]
-		public async Task<ActionResult<IEnumerable<InstallationResponseDTO>>> Get([FromQuery] int? filialId)
+		public async Task<ActionResult<IEnumerable<Installation>>> Get([FromQuery] int? filialId)
 		{
-			IEnumerable<Installation> installations = await _repository.ReadAsync(filialId);
-
-			IEnumerable<InstallationResponseDTO> installationsDTO = 
-				installations.Select(i => new InstallationResponseDTO(
-					i.Id, i.Name, i.FilialId, i.DeviceId, i.IsDefault, i.Order));
-
-			return Ok(installationsDTO);
+			return Ok(await _repository.ReadAsync(filialId));
 		}
 
 
@@ -48,20 +42,17 @@ namespace PrinterFil.Api.Controllers
 		/// <param name="id">Идентификатор</param>
 		/// <response code="200">Успешное предоставление</response>
 		/// <response code="404">Какой-то параметр не прошел проверку на существование</response>
-		[ProducesResponseType(typeof(InstallationResponseDTO), 200)]
+		[ProducesResponseType(typeof(Installation), 200)]
 		[ProducesResponseType(404)]
 		[HttpGet]
-		public async Task<ActionResult<InstallationResponseDTO>> Get([Required][FromQuery] int id)
+		public async Task<ActionResult<Installation>> Get([Required][FromQuery] int id)
 		{
 			Installation? install = await _repository.ReadAsync(id);
+
 			if (install == null)
 				return NotFound();
 
-			InstallationResponseDTO installationDTO = new (install.Id, 
-				install.Name, install.FilialId, install.DeviceId, 
-				install.IsDefault, install.Order);
-
-			return Ok(installationDTO);
+			return Ok(install);
 		}
 
 

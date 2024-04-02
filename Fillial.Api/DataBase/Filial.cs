@@ -13,7 +13,7 @@ public partial class Filial
 	[StringLength(20)]
 	public string? Location { get; set; }
 
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public virtual ICollection<Employee> Employees { get; set; } = [];
 
-    public virtual ICollection<Installation> Installations { get; set; } = new List<Installation>();
+    public virtual ICollection<Installation> Installations { get; set; } = [];
 }

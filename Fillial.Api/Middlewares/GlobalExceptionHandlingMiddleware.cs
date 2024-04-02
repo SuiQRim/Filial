@@ -19,20 +19,6 @@ namespace PrinterFil.Api.Middlewares
 			{
 				await next(context);
 			}
-			catch (BadHttpRequestException e)
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-				ProblemDetails problem = new()
-				{
-					Status = (int)HttpStatusCode.BadRequest,
-					Type = HttpStatusCode.BadRequest.ToString(),
-					Title = "Bad Request",
-					Detail = e.Message
-				};
-				var json = JsonSerializer.Serialize(problem);
-				context.Response.ContentType = "application/json";
-				await context.Response.WriteAsJsonAsync(json);
-			}
 			catch (Exception e)
 			{
 				_logger.LogError(e, e.Message);
