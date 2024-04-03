@@ -87,8 +87,7 @@ public class PrintersRepository : IPrintersRepository
 			command.Parameters.AddWithValue("@Id", id);
 
 			await connection.OpenAsync();
-			object? result = await command.ExecuteScalarAsync();
-			return result != null && (int)result > 0;
+			return (int?)await command.ExecuteScalarAsync() == 1;
 		}
 	}
 

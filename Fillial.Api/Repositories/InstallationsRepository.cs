@@ -31,7 +31,6 @@ public class InstallationsRepository : IInstallationsRepository
 				installations.Add(ReadEntity(reader));
 			}
 		}
-
 		return installations;
 	}
 
@@ -102,13 +101,14 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		string query = "INSERT INTO Installations (Name, FilialId, DeviceId, IsDefault, [Order]) output INSERTED.ID " +
 			"VALUES (@Name, @FilialId, @DeviceId, @IsDefault, @Order)";
-		using (SqlConnection connection = new (_connectionString))
-		using (SqlCommand command = new (query, connection))
+		using (SqlConnection connection = new SqlConnection(_connectionString))
 		{
-			AddToParams(installation, command);
-
-			await connection.OpenAsync();
-			return (int?)await command.ExecuteScalarAsync();
+			using (SqlCommand command = new SqlCommand(query, connection))
+			{
+				AddToParams(installation, command);
+				await connection.OpenAsync();
+				return (int?)await command.ExecuteScalarAsync();
+			}
 		}
 	}
 
@@ -118,47 +118,52 @@ public class InstallationsRepository : IInstallationsRepository
 			"Name = @Name, FilialId = @FilialId, DeviceId = @DeviceId, IsDefault = @IsDefault, [Order] = @Order " +
 			"WHERE Id = @Id";
 		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection))
-		{
-			command.Parameters.AddWithValue("@Id", id);
-			AddToParams(installation, command);
 
-			await connection.OpenAsync();
-			await command.ExecuteNonQueryAsync();
-		}
+		using SqlCommand command = new(query, connection);
+		command.Parameters.AddWithValue("@Id", id);
+		AddToParams(installation, command);
+
+		await connection.OpenAsync();
+		await command.ExecuteNonQueryAsync();
+	}
+
+	private static void AddToParams(Installation installation, SqlCommand command)
+	{
+		command.Parameters.AddWithValue("@Name", installation.Name);
+		command.Parameters.AddWithValue("@FilialId", installation.FilialId);
+		command.Parameters.AddWithValue("@DeviceId", installation.DeviceId);
+		command.Parameters.AddWithValue("@IsDefault", installation.IsDefault);
+		command.Parameters.AddWithValue("@Order", installation.Order);
 	}
 
 	public async Task DeleteAsync(int id)
 	{
 		string query = "DELETE FROM Installations WHERE Id = @Id";
-		using (SqlConnection connection = new(_connectionString))
-		using (SqlCommand command = new(query, connection))
-		{
-			command.Parameters.AddWithValue("@Id", id);
+		using SqlConnection connection = new(_connectionString);
 
-			await connection.OpenAsync();
-			await command.ExecuteNonQueryAsync();
-		}
+		using SqlCommand command = new(query, connection);
+		command.Parameters.AddWithValue("@Id", id);
+
+		await connection.OpenAsync();
+		await command.ExecuteNonQueryAsync();
 	}
 
 	public async Task<byte?> GetOrderAsync(int filialId)
 	{
-		// Запрос вернет минимальное не использованное число от 1 до 255
 		const byte maxValue = byte.MaxValue;
+		// Запрос вернет минимальное не использованное число от 1 до 255
 		string query = "SELECT MIN([Order]) + 1 FROM Installations " +
 			"WHERE [Order] < @MaxValue AND [Order] + 1 NOT IN (" +
 			"SELECT [Order] FROM Installations WHERE FilialId = @FilialId)";
 		using SqlConnection connection = new (_connectionString);
-		using (SqlCommand command = new(query, connection))
-		{
-			command.Parameters.AddWithValue("@MaxValue", maxValue);
-			command.Parameters.AddWithValue("@FilialId", filialId);
 
-			await connection.OpenAsync();
-			object? result = await command.ExecuteScalarAsync();
-			return !Convert.IsDBNull(result) ? Convert.ToByte(result) : null;
-		}
-		
+		using SqlCommand command = new(query, connection);
+		command.Parameters.AddWithValue("@MaxValue", maxValue);
+		command.Parameters.AddWithValue("@FilialId", filialId);
+
+		await connection.OpenAsync();
+		object? result = await command.ExecuteScalarAsync();
+		return !Convert.IsDBNull(result) ? Convert.ToByte(result) : null;
 	}
 
 	public async Task<bool> DefaultExistAsync(int filialId)
@@ -182,13 +187,12 @@ public class InstallationsRepository : IInstallationsRepository
 					   $"(SELECT 1 FROM Installations WHERE {condition})" +
 					   "SELECT 1 ELSE SELECT 0";
 		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection))
-		{
-			command.Parameters.AddRange(parameters);
-			await connection.OpenAsync();
-			object? result = await command.ExecuteScalarAsync();
-			return result != null && (int)result > 0;
-		}
+
+		using SqlCommand command = new(query, connection);
+		command.Parameters.AddRange(parameters);
+
+		await connection.OpenAsync();
+		return (int?)await command.ExecuteScalarAsync() == 1;
 	}
 
 	private static Installation ReadEntity(DbDataReader reader)
@@ -202,14 +206,5 @@ public class InstallationsRepository : IInstallationsRepository
 			IsDefault = (bool)reader["IsDefault"],
 			Order = (byte)reader["Order"]
 		};
-	}
-
-	private static void AddToParams(Installation installation, SqlCommand command)
-	{
-		command.Parameters.AddWithValue("@Name", installation.Name);
-		command.Parameters.AddWithValue("@FilialId", installation.FilialId);
-		command.Parameters.AddWithValue("@DeviceId", installation.DeviceId);
-		command.Parameters.AddWithValue("@IsDefault", installation.IsDefault);
-		command.Parameters.AddWithValue("@Order", installation.Order);
 	}
 }

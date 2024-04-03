@@ -16,7 +16,7 @@ public class FilialsRepository : IFilialsRepository
 
 	public async Task<IEnumerable<Filial>> ReadAsync()
 	{
-		List<Filial> filials = new();
+		List<Filial> filials = [];
 
 		string query = "SELECT Id, Name, Location FROM Filials";
 		using var connection = new SqlConnection(_connectionString);
@@ -26,11 +26,12 @@ public class FilialsRepository : IFilialsRepository
 			using SqlDataReader reader = await command.ExecuteReaderAsync();
 			while (await reader.ReadAsync())
 			{
+				int locationIndex = reader.GetOrdinal("Location");
 				filials.Add(new Filial
 				{
 					Id = (int)reader["Id"],
 					Name = (string)reader["Name"],
-					Location = reader.IsDBNull(reader.GetOrdinal("Location")) ? null : (string)reader["Location"]
+					Location = reader.IsDBNull(locationIndex) ? null : (string)reader[locationIndex]
 				});
 			}
 
@@ -65,8 +66,7 @@ public class FilialsRepository : IFilialsRepository
 			command.Parameters.AddWithValue("@Id", id);
 
 			await connection.OpenAsync();
-			object? result = await command.ExecuteScalarAsync();
-			return result != null && (int)result > 0;
+			return (int?)await command.ExecuteScalarAsync() == 1;
 		}
 	}
 

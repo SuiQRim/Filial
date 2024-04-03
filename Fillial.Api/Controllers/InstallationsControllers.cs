@@ -83,7 +83,7 @@ namespace PrinterFil.Api.Controllers
 			bool isDefault = installation.IsDefault;
 			if (isDefault)
 			{
-				await ResetDefault(installation.FilialId);
+				await ResetDefaultInstallationAsync(installation.FilialId);
 			}
 			else if (!await _repository.DefaultExistAsync(installation.FilialId))
 			{
@@ -99,10 +99,11 @@ namespace PrinterFil.Api.Controllers
 				Order = (byte)order
 			};
 
+
 			int? id = await _repository.CreateAsync(newInstallation);
 
 			if (id == null)
-				return BadRequest();
+				return BadRequest("Не удалось добавить инсталляцию");
 
 			return CreatedAtAction(nameof(Add), id);
 		}
@@ -120,7 +121,7 @@ namespace PrinterFil.Api.Controllers
 			return order;
 		}
 
-		private async Task ResetDefault(int filialId)
+		private async Task ResetDefaultInstallationAsync(int filialId)
 		{
 			Installation? defaultInstallation = await _repository.ReadDefaultAsync(filialId);
 			if (defaultInstallation != null)
@@ -148,13 +149,13 @@ namespace PrinterFil.Api.Controllers
 
 			if (installation.IsDefault)
 			{
-				await UpdateDefaultAsync(installation.FilialId);
+				await UpdateDefaultInstallationAsync(installation.FilialId);
 			}
 
 			return Ok();
 		}
 
-		private async Task UpdateDefaultAsync(int filialId)
+		private async Task UpdateDefaultInstallationAsync(int filialId)
 		{
 			Installation? newDefaultInstallation = await _repository.ReadFirstAsync(filialId);
 
