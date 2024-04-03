@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
 using PrinterFil.Api.DataBase;
-using PrinterFil.Api.Factories;
 using PrinterFil.Api.Repositories.IRepositories;
 
 namespace PrinterFil.Api.Repositories;
@@ -13,79 +12,68 @@ public class PrintersRepository : IPrintersRepository
 		_connectionString = connection;
 	}
 
-	// TODO: Проработать это
-	private static readonly Dictionary<Type, PrinterCreator> Creators = new()
-	{
-		{typeof(Printer), new LocalPrinterCreator() },
-		{typeof(NetworkPrinter), new NetworkPrinterCreator() },
-	};
-
-	private static readonly Dictionary<Type, string> Types = new()
-	{
-		{typeof(Printer), "Local" },
-		{typeof(NetworkPrinter), "Network" },
-	};
-
 	public async Task<IEnumerable<Printer>> ReadAsync()
 	{
-		List<Printer> printers = new ();
-
+		List<Printer> printers = [];
 		string query = "SELECT Id, Name, MacAddress, Type FROM Printers";
-		using (SqlConnection connection = new (_connectionString))
-		{
-			SqlCommand command = new (query, connection);
-			await connection.OpenAsync(); 
+		using SqlConnection connection = new(_connectionString);
+		using (SqlCommand command = new(query, connection)) { 
 
-			using (SqlDataReader reader = await command.ExecuteReaderAsync())
+			await connection.OpenAsync();
+			using SqlDataReader reader = await command.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
-				while (await reader.ReadAsync())
+				string type = (string)reader["Type"];
+				Printer? printer = type switch
 				{
-					int id = (int)reader["Id"];
-					string name = (string)reader["Name"];
-					string type = (string)reader["Type"];
-					string? macAddress = reader.IsDBNull(reader.GetOrdinal("MacAddress")) ? null : (string)reader["MacAddress"];
+					"Local" => ReadLocalPrinter(reader),
+					"Network" => ReadNetworkPrinter(reader),
+					_ => null 
+				};
 
-					if (type == "Local")
-					{
-						printers.Add(Creators[typeof(Printer)].PrinterFactory(id, name, macAddress));
-					}
-					else if (type == "Network")
-					{
-						printers.Add(Creators[typeof(NetworkPrinter)].PrinterFactory(id, name, macAddress));
-					}
-				}
+				if (printer != null)
+					printers.Add(printer);
 			}
 		}
 		return printers;
 	}
 
-	public async Task<IEnumerable<Printer>> ReadAsync<T>() where T : Printer
+	public async Task<IEnumerable<Printer>> ReadLocalAsync()
 	{
-		string type = Types[typeof(T)];
-		string query = "SELECT Id, Name, MacAddress FROM Printers WHERE Type = @Type";
-		using (SqlConnection connection = new(_connectionString))
+		List<Printer> printers = [];
+		string query = "SELECT Id, Name FROM Printers WHERE Type = @Type";
+		using SqlConnection connection = new(_connectionString);
+		using (SqlCommand command = new(query, connection))
 		{
+			command.Parameters.Add(new("@Type", "Local"));
+
 			await connection.OpenAsync();
-
-			using SqlCommand command = new(query, connection);
-			command.Parameters.Add(new SqlParameter("@Type", type));
-
-			List<Printer> printers = new();
-			using (SqlDataReader reader = await command.ExecuteReaderAsync())
+			using SqlDataReader reader = await command.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
-				while (await reader.ReadAsync())
-				{
-					int id = (int)reader["Id"];
-					string name = (string)reader["Name"];
-					string? macAddress = reader.IsDBNull(reader.GetOrdinal("MacAddress")) ? null : (string)reader["MacAddress"];
-
-					Printer printer = Creators[typeof(T)].PrinterFactory(id, name, macAddress);
-					printers.Add(printer);
-				}
+				printers.Add(ReadLocalPrinter(reader));
 			}
-			return printers;
 		}
+		return printers;
+	}
 
+	public async Task<IEnumerable<NetworkPrinter>> ReadNetworkAsync()
+	{
+		List<NetworkPrinter> printers = [];
+		string query = "SELECT Id, Name, MacAddress FROM Printers WHERE Type = @Type";
+		using SqlConnection connection = new(_connectionString);
+		using (SqlCommand command = new(query, connection))
+		{
+			command.Parameters.Add(new("@Type", "Network"));
+
+			await connection.OpenAsync();
+			using SqlDataReader reader = await command.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
+			{
+				printers.Add(ReadNetworkPrinter(reader));
+			}
+		}
+		return printers;
 	}
 
 	public async Task<bool> ExistAsync(int id)
@@ -102,6 +90,21 @@ public class PrintersRepository : IPrintersRepository
 			object? result = await command.ExecuteScalarAsync();
 			return result != null && (int)result > 0;
 		}
+	}
+
+	private Printer ReadLocalPrinter(SqlDataReader reader)
+	{
+		int id = (int)reader["Id"];
+		string name = (string)reader["Name"];
+		return new Printer { Id = id, Name = name };
+	}
+
+	private NetworkPrinter ReadNetworkPrinter(SqlDataReader reader)
+	{
+		int id = (int)reader["Id"];
+		string name = (string)reader["Name"];
+		string macAddress = (string)reader["MacAddress"];
+		return new NetworkPrinter { Id = id, Name = name, MacAddress = macAddress };
 	}
 }
 

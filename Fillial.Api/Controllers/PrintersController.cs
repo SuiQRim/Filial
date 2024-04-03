@@ -35,8 +35,8 @@ public class PrintersController : ControllerBase
 		IEnumerable<Printer>? printers = connectionType switch
 		{
 			null => await _repository.ReadAsync(),
-			1 => await _repository.ReadAsync<Printer>(),
-			2 => await _repository.ReadAsync<NetworkPrinter>(),
+			1 => await _repository.ReadLocalAsync(),
+			2 => await _repository.ReadNetworkAsync(),
 			_ => null
 		};
 
