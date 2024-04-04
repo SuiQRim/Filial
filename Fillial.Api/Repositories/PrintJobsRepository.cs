@@ -18,58 +18,62 @@ public class PrintJobsRepository : IPrintJobsRepository
 		string query = "INSERT INTO PrintJobs " +
 				"(Name, EmployeeId, [Order], LayerCount, IsSuccessful) output INSERTED.ID " +
 				"VALUES (@Name, @EmployeeId, @Order, @LayerCount, @IsSuccessful)";
-		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection)) 
-		{
-			AddToParams(printJob, command);
 
-			await connection.OpenAsync();
-			return (int?)await command.ExecuteScalarAsync();
-		}
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
 
-	}
-
-	public async Task CreateRangeAsync(IEnumerable<PrintJob> printJobs)
-	{
-		string query = "INSERT INTO PrintJobs " +
-					   "(Name, EmployeeId, [Order], LayerCount, IsSuccessful) " +
-					   "VALUES (@Name, @EmployeeId, @Order, @LayerCount, @IsSuccessful)";
-
-		using (SqlConnection connection = new (_connectionString))
-		{
-			await connection.OpenAsync();
-			using SqlTransaction transaction = connection.BeginTransaction();
-			try
-			{
-				using (SqlCommand command = new(query, connection, transaction))
-				{
-					foreach (var item in printJobs)
-					{
-						command.Parameters.Clear();
-						AddToParams(item, command);
-
-						await command.ExecuteNonQueryAsync();
-					}
-				}
-				await transaction.CommitAsync();
-			}
-			catch (Exception)
-			{
-				await transaction.RollbackAsync();
-				throw;
-			}
-		}
-	}
-
-
-	private void AddToParams(PrintJob printJob, SqlCommand command)
-	{
 		command.Parameters.Add("@Name", SqlDbType.NVarChar).Value = printJob.Name;
 		command.Parameters.Add("@EmployeeId", SqlDbType.Int).Value = printJob.EmployeeId;
 		command.Parameters.Add("@Order", SqlDbType.TinyInt).Value = printJob.Order;
 		command.Parameters.Add("@LayerCount", SqlDbType.Int).Value = printJob.LayerCount;
 		command.Parameters.Add("@IsSuccessful", SqlDbType.Bit).Value =
 			printJob.IsSuccessful == null ? DBNull.Value : printJob.IsSuccessful;
+
+		await connection.OpenAsync();
+		return (int?)await command.ExecuteScalarAsync();
+
+	}
+
+	public async Task<int> CreateRangeAsync(IEnumerable<PrintJob> printJobs)
+	{
+		string query = "INSERT INTO PrintJobs " +
+					   "(Name, EmployeeId, [Order], LayerCount, IsSuccessful) " +
+					   "VALUES (@Name, @EmployeeId, @Order, @LayerCount, @IsSuccessful)";
+
+		await using SqlConnection connection = new(_connectionString);
+		await connection.OpenAsync();
+		await using SqlTransaction transaction = connection.BeginTransaction();
+		try
+		{
+			int count = 0;
+			await using (SqlCommand command = new(query, connection, transaction))
+			{
+				command.Parameters.Add("@Name", SqlDbType.NVarChar);
+				command.Parameters.Add("@EmployeeId", SqlDbType.Int);
+				command.Parameters.Add("@Order", SqlDbType.TinyInt);
+				command.Parameters.Add("@LayerCount", SqlDbType.Int);
+				command.Parameters.Add("@IsSuccessful", SqlDbType.Bit);
+
+				foreach (var item in printJobs)
+				{
+					command.Parameters["@Name"].Value = item.Name;
+					command.Parameters["@EmployeeId"].Value = item.EmployeeId;
+					command.Parameters["@Order"].Value = item.Order;
+					command.Parameters["@LayerCount"].Value = item.LayerCount;
+					command.Parameters["@IsSuccessful"].Value = 
+						item.IsSuccessful == null ? DBNull.Value : item.IsSuccessful;
+
+					count += await command.ExecuteNonQueryAsync();
+				}
+			}
+			await transaction.CommitAsync();
+			return count;
+		}
+		catch (Exception)
+		{
+			await transaction.RollbackAsync();
+			throw;
+		}
 	}
 }
 

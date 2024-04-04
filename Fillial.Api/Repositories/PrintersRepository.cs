@@ -16,11 +16,12 @@ public class PrintersRepository : IPrintersRepository
 	{
 		List<Printer> printers = [];
 		string query = "SELECT Id, Name, MacAddress, Type FROM Printers";
-		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection)) { 
 
+		await using SqlConnection connection = new(_connectionString);
+		await using (SqlCommand command = new(query, connection))
+		{
 			await connection.OpenAsync();
-			using SqlDataReader reader = await command.ExecuteReaderAsync();
+			await using SqlDataReader reader = await command.ExecuteReaderAsync();
 			while (await reader.ReadAsync())
 			{
 				string type = (string)reader["Type"];
@@ -28,7 +29,7 @@ public class PrintersRepository : IPrintersRepository
 				{
 					"Local" => ReadLocalPrinter(reader),
 					"Network" => ReadNetworkPrinter(reader),
-					_ => null 
+					_ => null
 				};
 
 				if (printer != null)
@@ -42,8 +43,9 @@ public class PrintersRepository : IPrintersRepository
 	{
 		List<Printer> printers = [];
 		string query = "SELECT Id, Name FROM Printers WHERE Type = @Type";
-		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection))
+
+		await using SqlConnection connection = new(_connectionString);
+		await using (SqlCommand command = new(query, connection))
 		{
 			command.Parameters.Add(new("@Type", "Local"));
 
@@ -61,8 +63,9 @@ public class PrintersRepository : IPrintersRepository
 	{
 		List<NetworkPrinter> printers = [];
 		string query = "SELECT Id, Name, MacAddress FROM Printers WHERE Type = @Type";
-		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection))
+
+		await using SqlConnection connection = new(_connectionString);
+		await using (SqlCommand command = new(query, connection))
 		{
 			command.Parameters.Add(new("@Type", "Network"));
 
@@ -81,14 +84,14 @@ public class PrintersRepository : IPrintersRepository
 		string query = "IF EXISTS " +
 			"(SELECT 1 FROM Printers WHERE Id = @Id) " +
 			"SELECT 1 ELSE SELECT 0";
-		using SqlConnection connection = new(_connectionString);
-		using (SqlCommand command = new(query, connection))
-		{
-			command.Parameters.AddWithValue("@Id", id);
 
-			await connection.OpenAsync();
-			return (int?)await command.ExecuteScalarAsync() == 1;
-		}
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
+
+		command.Parameters.AddWithValue("@Id", id);
+
+		await connection.OpenAsync();
+		return (int?)await command.ExecuteScalarAsync() == 1;
 	}
 
 	private Printer ReadLocalPrinter(SqlDataReader reader)

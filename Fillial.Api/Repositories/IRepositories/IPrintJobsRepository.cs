@@ -5,5 +5,5 @@ public interface IPrintJobsRepository
 {
 	Task<int?> CreateAsync(PrintJob printJob);
 
-	Task CreateRangeAsync(IEnumerable<PrintJob> printJobs);
+	Task<int> CreateRangeAsync(IEnumerable<PrintJob> printJobs);
 }

@@ -13,17 +13,16 @@ namespace PrinterFil.Api.Repositories
 			_connectionString = connectionString;
 		}
 
-
 		public async Task<IEnumerable<Employee>> ReadAsync()
 		{
-			List<Employee> employees = new();
-
+			List<Employee> employees = [];
 			string query = "SELECT Id, Name, FilialId FROM Employees";
-			using var connection = new SqlConnection(_connectionString);
-			using (SqlCommand command = new(query, connection)) {
 
+			await using SqlConnection connection = new(_connectionString);
+			await using (SqlCommand command = new(query, connection))
+			{
 				await connection.OpenAsync();
-				using SqlDataReader reader = await command.ExecuteReaderAsync();
+				await using SqlDataReader reader = await command.ExecuteReaderAsync();
 				while (await reader.ReadAsync())
 				{
 					employees.Add(new Employee

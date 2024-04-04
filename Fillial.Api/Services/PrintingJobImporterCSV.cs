@@ -31,59 +31,62 @@ namespace PrinterFil.Api.Services
 		/// <param name="file">Файл</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException">Выбрасывается при несоблюдении требований к файлу</exception>
-		public IEnumerable<PrintJobDTO> Parse(IFormFile file)
+		public async Task<IEnumerable<PrintJobDTO>> ParseAsync(IFormFile file)
 		{
+			const int maxLines = 100;
 			string[] lines;
-			using (var reader = new StreamReader(file.OpenReadStream()))
+			using (StreamReader streamReader = new (file.OpenReadStream()))
 			{
-				reader.Peek();
-				if (reader.CurrentEncoding != Encoding.UTF8)
-					throw new InvalidOperationException("The file is not encoded in UTF-8");
-
-				lines = ReadFirstLines(reader, 100);
+				CheckEncoding(streamReader);
+				lines = await ReadFirstLinesAsync(streamReader, maxLines);
 			}
 
-			List<PrintJobDTO> printJobDTOs = new(lines.Length);
+			List<PrintJobDTO> printJobDTOs = new (lines.Length);
 
-			using (var reader = new StringReader(string.Join(Environment.NewLine, lines)))
-			using (var csv = new CsvReader(reader, _configuration))
+			using (StringReader stringReader = new (string.Join(Environment.NewLine, lines)))
+			using (CsvReader csvReader = new (stringReader, _configuration))
 			{
-				while (csv.Read())
+				while (csvReader.Read())
 				{
 					try
 					{
-						PrintJobDTO pj = new(
-							csv.GetField<string>(0),
-							csv.GetField<int>(1),
-							csv.GetField<byte>(2),
-							csv.GetField<int>(3)
+						PrintJobDTO pj = new (
+							csvReader.GetField<string>(0),
+							csvReader.GetField<int>(1),
+							csvReader.GetField<byte>(2),
+							csvReader.GetField<int>(3)
 						);
-						
+
 						printJobDTOs.Add(pj);
 					}
-					catch (CsvHelperException ex)
-					when (ex is ValidationException || ex is TypeConverterException)
+					catch (CsvHelperException ex) when (ex is ValidationException || ex is TypeConverterException)
 					{
 						continue;
 					}
 				}
 			}
+
 			return printJobDTOs;
 		}
-
-		private static string[] ReadFirstLines(StreamReader reader, int maxLines)
+		private void CheckEncoding(StreamReader streamReader)
+		{
+			streamReader.Peek();
+			if (streamReader.CurrentEncoding != _configuration.Encoding)
+				throw new InvalidOperationException("The file is not encoded in UTF-8");
+		}
+		private async Task<string[]> ReadFirstLinesAsync(StreamReader reader, int maxLines)
 		{
 			List<string> lines = new(maxLines);
 			for (int i = 0; i < maxLines; i++)
 			{
-				var line = reader.ReadLine();
+				string? line = await reader.ReadLineAsync();
 
 				if (line == null)
 					break;
 
 				lines.Add(line);
 			}
-			return lines.ToArray();
+			return [.. lines];
 		}
 	}
 }

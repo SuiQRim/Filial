@@ -13,19 +13,20 @@ public class InstallationsRepository : IInstallationsRepository
 		_connectionString = connection;
 	}
 
-    public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
+	public async Task<IEnumerable<Installation>> ReadAsync(int? filialId)
 	{
 		List<Installation> installations = [];
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
 			"FROM Installations WHERE FilialId = COALESCE(@FilialId, FilialId)";
 
-		using (SqlConnection connection = new(_connectionString))
+		await using (SqlConnection connection = new(_connectionString))
 		{
-			SqlCommand command = new(query, connection);
+			await using SqlCommand command = new(query, connection);
+
 			command.Parameters.AddWithValue("@FilialId", filialId.HasValue ? filialId : DBNull.Value);
 
 			await connection.OpenAsync();
-			using SqlDataReader reader = await command.ExecuteReaderAsync();
+			await using SqlDataReader reader = await command.ExecuteReaderAsync();
 			while (await reader.ReadAsync())
 			{
 				installations.Add(ReadEntity(reader));
@@ -38,30 +39,29 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
 			"FROM Installations WHERE Id = @Id";
-		using (SqlConnection connection = new(_connectionString))
-		{
-			SqlCommand command = new(query, connection);
-			command.Parameters.AddWithValue("@Id", id);
 
-			await connection.OpenAsync();
-			using SqlDataReader reader = await command.ExecuteReaderAsync();
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
 
-			return await reader.ReadAsync() ? ReadEntity(reader) : null;
-		}
+		command.Parameters.AddWithValue("@Id", id);
+
+		await connection.OpenAsync();
+		using SqlDataReader reader = await command.ExecuteReaderAsync();
+		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
 	public async Task<Installation?> ReadDefaultAsync(int filialId)
 	{
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
 			"FROM Installations WHERE FilialId = @FilialId AND IsDefault = 1";
-		using SqlConnection connection = new(_connectionString);
 
-		SqlCommand command = new(query, connection);
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
+
 		command.Parameters.AddWithValue("@FilialId", filialId);
 
 		await connection.OpenAsync();
 		using SqlDataReader reader = await command.ExecuteReaderAsync();
-
 		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
@@ -70,15 +70,14 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
 				"FROM Installations WHERE FilialId = @FilialId AND [Order] = @Order";
-		using SqlConnection connection = new(_connectionString);
 
+		await using SqlConnection connection = new(_connectionString);
 		SqlCommand command = new(query, connection);
 		command.Parameters.AddWithValue("@FilialId", filialId);
 		command.Parameters.AddWithValue("@Order", order);
 
 		await connection.OpenAsync();
-		using SqlDataReader reader = await command.ExecuteReaderAsync();
-
+		await using SqlDataReader reader = await command.ExecuteReaderAsync();
 		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
@@ -92,8 +91,7 @@ public class InstallationsRepository : IInstallationsRepository
 		command.Parameters.AddWithValue("@FilialId", filialId);
 
 		await connection.OpenAsync();
-		using SqlDataReader reader = await command.ExecuteReaderAsync();
-
+		await using SqlDataReader reader = await command.ExecuteReaderAsync();
 		return await reader.ReadAsync() ? ReadEntity(reader) : null;
 	}
 
@@ -101,15 +99,14 @@ public class InstallationsRepository : IInstallationsRepository
 	{
 		string query = "INSERT INTO Installations (Name, FilialId, DeviceId, IsDefault, [Order]) output INSERTED.ID " +
 			"VALUES (@Name, @FilialId, @DeviceId, @IsDefault, @Order)";
-		using (SqlConnection connection = new SqlConnection(_connectionString))
-		{
-			using (SqlCommand command = new SqlCommand(query, connection))
-			{
-				AddToParams(installation, command);
-				await connection.OpenAsync();
-				return (int?)await command.ExecuteScalarAsync();
-			}
-		}
+
+		await using SqlConnection connection = new (_connectionString);
+		await using SqlCommand command = new (query, connection);
+
+		AddToParams(installation, command);
+
+		await connection.OpenAsync();
+		return (int?)await command.ExecuteScalarAsync();
 	}
 
 	public async Task UpdateAsync(int id, Installation installation)
@@ -117,9 +114,10 @@ public class InstallationsRepository : IInstallationsRepository
 		string query = "UPDATE Installations SET " +
 			"Name = @Name, FilialId = @FilialId, DeviceId = @DeviceId, IsDefault = @IsDefault, [Order] = @Order " +
 			"WHERE Id = @Id";
-		using SqlConnection connection = new(_connectionString);
 
-		using SqlCommand command = new(query, connection);
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
+
 		command.Parameters.AddWithValue("@Id", id);
 		AddToParams(installation, command);
 
@@ -139,9 +137,10 @@ public class InstallationsRepository : IInstallationsRepository
 	public async Task DeleteAsync(int id)
 	{
 		string query = "DELETE FROM Installations WHERE Id = @Id";
-		using SqlConnection connection = new(_connectionString);
 
-		using SqlCommand command = new(query, connection);
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
+
 		command.Parameters.AddWithValue("@Id", id);
 
 		await connection.OpenAsync();
@@ -155,14 +154,16 @@ public class InstallationsRepository : IInstallationsRepository
 		string query = "SELECT MIN([Order]) + 1 FROM Installations " +
 			"WHERE [Order] < @MaxValue AND [Order] + 1 NOT IN (" +
 			"SELECT [Order] FROM Installations WHERE FilialId = @FilialId)";
-		using SqlConnection connection = new (_connectionString);
 
-		using SqlCommand command = new(query, connection);
+		await using SqlConnection connection = new (_connectionString);
+		await using SqlCommand command = new(query, connection);
+
 		command.Parameters.AddWithValue("@MaxValue", maxValue);
 		command.Parameters.AddWithValue("@FilialId", filialId);
 
 		await connection.OpenAsync();
 		object? result = await command.ExecuteScalarAsync();
+
 		return !Convert.IsDBNull(result) ? Convert.ToByte(result) : null;
 	}
 
@@ -186,9 +187,10 @@ public class InstallationsRepository : IInstallationsRepository
 		string query = "IF EXISTS " +
 					   $"(SELECT 1 FROM Installations WHERE {condition})" +
 					   "SELECT 1 ELSE SELECT 0";
-		using SqlConnection connection = new(_connectionString);
 
-		using SqlCommand command = new(query, connection);
+		await using SqlConnection connection = new(_connectionString);
+		await using SqlCommand command = new(query, connection);
+
 		command.Parameters.AddRange(parameters);
 
 		await connection.OpenAsync();

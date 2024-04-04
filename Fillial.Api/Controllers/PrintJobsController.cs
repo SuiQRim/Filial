@@ -95,7 +95,7 @@ public class PrintJobsController : ControllerBase
 		IEnumerable<PrintJobDTO> jobDTOs;
 		try
 		{
-			jobDTOs = _printingJobImporter.Parse(uploadedFile);
+			jobDTOs = await _printingJobImporter.ParseAsync(uploadedFile);
 		}
 		catch (Exception)
 		{
@@ -110,9 +110,9 @@ public class PrintJobsController : ControllerBase
 			Order = j.InstallationOrder ?? 0
 		});
 
-		await _repository.CreateRangeAsync(jobs);
+		int insertedCount = await _repository.CreateRangeAsync(jobs);
 
-		return Ok(jobs.Count());
+		return Ok(insertedCount);
 	}
 
 }

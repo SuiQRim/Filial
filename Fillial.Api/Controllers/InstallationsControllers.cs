@@ -18,7 +18,7 @@ namespace PrinterFil.Api.Controllers
 			IFilialsRepository filialsRepository, IPrintersRepository printersRepository)
 		{
 			_repository = repository;
-			_filialsRepository = filialsRepository; 
+			_filialsRepository = filialsRepository;
 			_printersRepository = printersRepository;
 		}
 
@@ -72,7 +72,7 @@ namespace PrinterFil.Api.Controllers
 		{
 			if (!await _filialsRepository.ExistAsync(installation.FilialId))
 				return NotFound("Филиал не существует");
-			
+
 			if (!await _printersRepository.ExistAsync(installation.PrintingDeviceId))
 				return NotFound("Печатное устройство не существует");
 
@@ -139,7 +139,7 @@ namespace PrinterFil.Api.Controllers
 		/// <response code="200">Удален</response>
 		[ProducesResponseType(200)]
 		[HttpDelete]
-		public async Task<IActionResult> Delete(int id) 
+		public async Task<IActionResult> Delete([Required] int id) 
 		{ 
 			Installation? installation = await _repository.ReadAsync(id);
 			if (installation == null)
