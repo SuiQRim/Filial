@@ -49,8 +49,7 @@ public class InstallationsController : ControllerBase
 				instal.FilialId,
 				instal.PrintingDeviceId,
 				instal.IsDefault,
-				instal.Order)
-			);
+				instal.Order));
 	}
 
 	[HttpPost]
@@ -73,5 +72,13 @@ public class InstallationsController : ControllerBase
 
 		return Ok(id);
 
+	}
+
+
+	[HttpDelete]
+	public async Task<ActionResult<Installation>> Delete([Required][FromQuery] int id)
+	{
+		await _installationsService.RemoveAsync(id);
+		return Ok();
 	}
 }
