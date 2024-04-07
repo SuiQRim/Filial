@@ -4,11 +4,11 @@ namespace PFilial.DAL.Repositories.Interfaces;
 
 public interface IPrintersRepository
 {
-	Task<IEnumerable<PrinterEntity>> ReadAsync();
+	Task<PrinterEntity[]> ReadAsync();
 
-	Task<IEnumerable<PrinterEntity>> ReadLocalAsync();
+	Task<PrinterEntity[]> ReadLocalAsync();
 
-	Task<IEnumerable<NetworkPrinterEntity>> ReadNetworkAsync();
+	Task<NetworkPrinterEntity[]> ReadNetworkAsync();
 
 	Task<bool> ExistAsync(int id);
 }

@@ -1,10 +1,10 @@
 ﻿namespace PFilial.DAL.Entities;
 
-public class EmployeeEntity
+public record EmployeeEntity
 {
-	public int Id { get; set; }
+    public required int Id { get; init; }
 
-	public required string Name { get; set; }
+	public required string Name { get; init; }
 
-	public int FilialId { get; set; }
+	public required int FilialId { get; init; }
 }

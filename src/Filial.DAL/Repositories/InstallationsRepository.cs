@@ -13,7 +13,7 @@ public class InstallationsRepository : IInstallationsRepository
 		_connectionString = connection;
 	}
 
-	public async Task<IEnumerable<InstallationEntity>> ReadAsync(int? filialId)
+	public async Task<InstallationEntity[]> ReadAsync(int? filialId)
 	{
 		List<InstallationEntity> installations = [];
 		string query = "SELECT Id, Name, DeviceId, FilialId, IsDefault, [Order] " +
@@ -32,7 +32,7 @@ public class InstallationsRepository : IInstallationsRepository
 				installations.Add(ReadEntity(reader));
 			}
 		}
-		return installations;
+		return installations.ToArray();
 	}
 
 	public async Task<InstallationEntity?> ReadAsync(int id)

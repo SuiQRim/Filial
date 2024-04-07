@@ -1,10 +1,10 @@
 ﻿namespace PFilial.DAL.Entities;
 
-public class FilialEntity
+public record FilialEntity
 {
-	public int Id { get; set; }
-	public required string Name { get; set; }
-	public string? Location { get; set; }
-	public virtual ICollection<EmployeeEntity> Employees { get; set; } = [];
-	public virtual ICollection<InstallationEntity> Installations { get; set; } = [];
+    public required int Id { get; init; }
+
+	public required string Name { get; init; }
+
+	public string? Location { get; init; }
 }

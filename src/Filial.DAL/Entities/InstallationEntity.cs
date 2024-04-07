@@ -1,16 +1,16 @@
 ﻿namespace PFilial.DAL.Entities;
 
-public class InstallationEntity
+public record InstallationEntity
 {
-	public int Id { get; set; }
+	public required int Id { get; init; }
 
-	public required string Name { get; set; }
+	public required string Name { get; init; }
 
-	public int FilialId { get; set; }
+	public required int FilialId { get; init; }
 
-	public int DeviceId { get; set; }
+	public required int DeviceId { get; init; }
 
-	public bool IsDefault { get; set; }
+	public required bool IsDefault { get; init; }
 
-	public byte Order { get; set; }
+	public required byte Order { get; init; }
 }

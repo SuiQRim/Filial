@@ -1,7 +1,11 @@
 ﻿namespace PFilial.DAL.Entities;
 
-public class NetworkPrinterEntity : PrinterEntity
+public record NetworkPrinterEntity : PrinterEntity
 {
-	public required string MacAddress { get; set; }
+	public NetworkPrinterEntity(int id, string name, string type, string macAddress) : base (id, name, type)
+	{
+		MacAddress = macAddress;
+	}
+	public string MacAddress { get; init; }
 }
 

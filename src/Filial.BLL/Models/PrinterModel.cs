@@ -4,4 +4,4 @@ public record PrinterModel(
 	int Id,
 	string Name,
 	string Type,
-	string? MacAddress = null);
+	string? MacAddress);

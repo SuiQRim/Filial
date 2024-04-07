@@ -1,16 +1,16 @@
 ﻿namespace PFilial.DAL.Entities;
 
-public class PrintJobEntity
+public record PrintJobEntity
 {
-	public int Id { get; set; }
+	public required int Id { get; init; }
 
-	public required string Name { get; set; }
+	public required string Name { get; init; }
 
-	public int EmployeeId { get; set; }
+	public required int EmployeeId { get; init; }
 
-	public byte Order { get; set; }
+	public required byte Order { get; init; }
 
-	public int LayerCount { get; set; }
+	public required int LayerCount { get; init; }
 
-	public bool? IsSuccessful { get; set; }
+	public bool? IsSuccessful { get; init; }
 }

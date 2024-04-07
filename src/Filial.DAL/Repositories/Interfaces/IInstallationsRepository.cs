@@ -4,7 +4,7 @@ namespace PFilial.DAL.Repositories.Interfaces;
 
 public interface IInstallationsRepository
 {
-	Task<IEnumerable<InstallationEntity>> ReadAsync(int? filialId);
+	Task<InstallationEntity[]> ReadAsync(int? filialId);
 
 	Task<InstallationEntity?> ReadAsync(int id);
 
