@@ -1,7 +1,7 @@
 ﻿using PFilial.BLL.Services.Interfaces;
 using PFilial.DAL.Entities;
 using PFilial.DAL.Repositories.Interfaces;
-using PrinterFil.Api.Models;
+using PFilial.BLL.Models;
 
 namespace PFilial.BLL.Services;
 

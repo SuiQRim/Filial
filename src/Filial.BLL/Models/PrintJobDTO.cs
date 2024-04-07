@@ -1,8 +1,7 @@
 ﻿namespace PFilial.BLL.Models;
 
-public record PrintJobModel(
-	int Id,
+public record PrintJobDTO(
 	string Name,
 	int EmployeeId,
-	byte? InstallationOrder,
+	byte InstallationOrder,
 	int LayerCount);

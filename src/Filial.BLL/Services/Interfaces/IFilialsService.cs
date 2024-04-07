@@ -1,4 +1,4 @@
-﻿using PrinterFil.Api.Models;
+﻿using PFilial.BLL.Models;
 
 namespace PFilial.BLL.Services.Interfaces;
 

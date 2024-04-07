@@ -3,7 +3,7 @@ using PFilial.DAL.Entities;
 using PFilial.DAL.Repositories.Interfaces;
 using System.Data.Common;
 
-namespace PrinterFil.Api.Repositories;
+namespace PFilial.DAL.Repositories;
 
 public class FilialsRepository : IFilialsRepository
 {

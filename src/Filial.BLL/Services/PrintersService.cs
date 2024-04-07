@@ -3,7 +3,6 @@ using PFilial.BLL.Models.Enums;
 using PFilial.BLL.Services.Interfaces;
 using PFilial.DAL.Entities;
 using PFilial.DAL.Repositories.Interfaces;
-using PrinterFil.Api.Models;
 
 namespace PFilial.BLL.Services;
 

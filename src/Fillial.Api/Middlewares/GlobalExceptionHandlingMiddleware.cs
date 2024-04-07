@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace PrinterFil.Api.Middlewares
+namespace PFilial.DAL.Middlewares
 {
 	public class GlobalExceptionHandlingMiddleware : IMiddleware
 	{

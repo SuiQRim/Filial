@@ -2,7 +2,7 @@
 using Microsoft.Data.SqlClient;
 using PFilial.DAL.Repositories.Interfaces;
 
-namespace PrinterFil.Api.Repositories
+namespace PFilial.DAL.Repositories
 {
 	public class EmployeesRepository : IEmployeesRepository
 	{

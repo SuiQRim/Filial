@@ -1,6 +1,6 @@
 ﻿namespace PFilial.API.Responses.V1;
 
-public record Installation(
+public record InstallationResponse(
 	int Id,
 	string Name,
 	int FilialId,

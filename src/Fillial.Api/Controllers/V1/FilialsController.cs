@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PFilial.API.Responses.V1;
+using PFilial.BLL.Models;
 using PFilial.BLL.Services.Interfaces;
-using PrinterFil.Api.Models;
 
 namespace PFilial.API.Controllers.V1;
 
@@ -22,7 +22,7 @@ public class FilialsController : ControllerBase
 		FilialModel[] filials = await _filialsService.GetFilials();
 
 		return Ok(filials
-			.Select(x => new Filial(
+			.Select(x => new FilialResponse(
 				x.Id,
 				x.Name,
 				x.Location ?? string.Empty))

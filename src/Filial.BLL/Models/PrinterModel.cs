@@ -1,4 +1,4 @@
-﻿namespace PrinterFil.Api.Models;
+﻿namespace PFilial.BLL.Models;
 
 public record PrinterModel(
 	int Id,
