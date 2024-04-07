@@ -21,12 +21,12 @@ public class FilialsController : ControllerBase
 	{
 		FilialModel[] filials = await _filialsService.GetFilials();
 
-		return Ok(new GetFilialsResponse(filials
+		return Ok(filials
 			.Select(x => new Filial(
 				x.Id,
 				x.Name,
 				x.Location ?? string.Empty))
-			.ToArray()));
+			.ToArray());
 	}
 
 

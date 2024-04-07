@@ -18,16 +18,15 @@ public class PrintersController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<GetDevicesResponse>> GetDevices([FromQuery] int? connectionType = 0)
+	public async Task<ActionResult<Printer[]>> GetDevices([FromQuery] int? connectionType = 0)
 	{
 		PrinterModel [] printers = await _printingDevicesService.GetPrinters((PrinterType)(connectionType ?? 0));
-		return Ok(new GetDevicesResponse(
-			printers
+		return Ok(printers
 			.Select(x => new Printer(
 				x.Id,
 				x.Name,
 				x.Type,
 				x.MacAddress))
-			.ToArray()));
+			.ToArray());
 	}
 }

@@ -17,17 +17,16 @@ public class EmployeesController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<GetEmployeeResponse>> GetEmployees()
+	public async Task<ActionResult<Employee[]>> GetEmployees()
 	{
 		EmployeeModel[] employees = await _employeeService.GetEmployees();
 
-		return Ok(new GetEmployeeResponse(employees
+		return Ok(employees
 			.Select(x => new Employee(
 				x.Id,
 				x.Name,
 				x.FilialId))
-			.ToArray()
-			));
+			.ToArray());
 	}
 }
 
