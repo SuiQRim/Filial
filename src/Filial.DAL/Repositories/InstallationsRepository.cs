@@ -167,36 +167,6 @@ public class InstallationsRepository : IInstallationsRepository
 		return !Convert.IsDBNull(result) ? Convert.ToByte(result) : null;
 	}
 
-	public async Task<bool> DefaultExistAsync(int filialId)
-	{
-		return await ExistAsync("FilialId = @FilialId AND IsDefault = 1", [
-			new("@FilialId", filialId)
-		]);
-	}
-
-	public async Task<bool> ExistByOrderAsync(int filialId, byte order)
-	{
-		return await ExistAsync("FilialId = @FilialId AND [Order] = @Order", [
-			new ("@FilialId", filialId),
-			new ("@Order", order)
-		]);
-	}
-
-	private async Task<bool> ExistAsync(string condition, SqlParameter[] parameters)
-	{
-		string query = "IF EXISTS " +
-					   $"(SELECT 1 FROM Installations WHERE {condition})" +
-					   "SELECT 1 ELSE SELECT 0";
-
-		await using SqlConnection connection = new(_connectionString);
-		await using SqlCommand command = new(query, connection);
-
-		command.Parameters.AddRange(parameters);
-
-		await connection.OpenAsync();
-		return (int?)await command.ExecuteScalarAsync() == 1;
-	}
-
 	private static InstallationEntity ReadEntity(DbDataReader reader)
 	{
 		return new InstallationEntity

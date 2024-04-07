@@ -31,6 +31,8 @@ builder.Services.AddTransient<IFilialsRepository, FilialsRepository>(r => new (c
 builder.Services.AddScoped<IFilialsService, FilialsService>();
 builder.Services.AddTransient<IPrintersRepository, PrintersRepository>(r => new(connection));
 builder.Services.AddScoped<IPrintersService, PrintersService>();
+builder.Services.AddTransient<IInstallationsRepository, InstallationsRepository>(r => new(connection));
+builder.Services.AddScoped<IInstallationsService, InstallationsService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

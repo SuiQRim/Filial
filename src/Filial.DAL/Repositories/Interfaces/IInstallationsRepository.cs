@@ -21,9 +21,4 @@ public interface IInstallationsRepository
 	Task UpdateAsync(int id, InstallationEntity installation);
 
 	Task<byte?> GetOrderAsync(int filialId);
-
-	Task<bool> DefaultExistAsync(int filialId);
-
-	Task<bool> ExistByOrderAsync(int filialId, byte order);
-
 }
